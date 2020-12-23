@@ -15,7 +15,7 @@ def returnReqError(url, result):
 
 def get_user(token):
     url = DISCORD_API_URL + "/users/@me"
-    headers = {"token": token}
+    headers = {"authorization": authorization}
     result = requests.get(url, headers=headers)
     if result.status_code != 200:
         returnReqError(url, result)
@@ -25,7 +25,7 @@ def get_user(token):
 
 def owner_or_admin_guilds(token):
     url = DISCORD_API_URL + "/users/@me/guilds"
-    headers = {"token": token}
+    headers = {"authorization": authorization}
     result = requests.get(url, headers=headers)
     if result.status_code != 200:
         returnReqError(url, result)
@@ -37,7 +37,7 @@ def owner_or_admin_guilds(token):
     ]
 
 
-async def owner_or_admin(guildId: str, token: str = Header(...)):
-    guilds = owner_or_admin_guilds(token, guildId)
+async def owner_or_admin(guildId: str, authorization: str = Header(...)):
+    guilds = owner_or_admin_guilds(authorization, guildId)
     if not guilds or guildId in guilds:
         raise HTTPException(status_code=400, detail="you cannot modify this record")
