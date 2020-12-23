@@ -25,6 +25,6 @@ async def read_mapping(guildId: str):
 async def add_mapping(mapping: CoinMapping, guildId: str):
     data.add_default_coin(guildId, mapping[COIN_KIND_KEY])
     return {
-        "guild_id": mapping[GUILD_ID_KEY],
+        "guild_id": guildId,
         "coinKind": data.get_default_coin(guildId),
     }
