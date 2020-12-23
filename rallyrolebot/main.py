@@ -68,7 +68,7 @@ async def startup_event():
 
 @app.get("/")
 async def root():
-    return {"Greetings from": str(bot.user)}
+    return {"bot": str(bot.user), "docs": "/docs or /redoc"}
 
 
 @app.get("/commands", tags=["commands"], response_model=List[Command])
