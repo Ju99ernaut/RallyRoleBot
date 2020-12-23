@@ -23,10 +23,7 @@ router = APIRouter()
     "/mappings/roles/{guildId}", tags=["roles"], response_model=List[RoleMapping]
 )
 async def read_mappings(guildId: str):
-    roles = []
-    for mappings in data.get_role_mappings(guildId):
-        roles.append(mappings)
-    return roles
+    return [mappings for mappings in data.get_role_mappings(guildId)]
 
 
 @router.post("/mappings/roles", tags=["roles"], response_model=List[RoleMapping])
@@ -37,10 +34,7 @@ async def add_mapping(mapping: RoleMapping):
         mapping[REQUIRED_BALANCE_KEY],
         mapping[ROLE_NAME_KEY],
     )
-    roles = []
-    for mappings in data.get_role_mappings(mapping[GUILD_ID_KEY]):
-        roles.append(mappings)
-    return roles
+    return [mappings for mappings in data.get_role_mappings(mapping[GUILD_ID_KEY])]
 
 
 @router.delete("/mappings/roles", tags=["roles"], response_model=List[RoleMapping])
@@ -51,7 +45,4 @@ async def delete_mapping(mapping: RoleMapping):
         mapping[REQUIRED_BALANCE_KEY],
         mapping[ROLE_NAME_KEY],
     )
-    roles = []
-    for mappings in data.get_role_mappings(mapping[GUILD_ID_KEY]):
-        roles.append(mappings)
-    return roles
+    return [mappings for mappings in data.get_role_mappings(mapping[GUILD_ID_KEY])]
