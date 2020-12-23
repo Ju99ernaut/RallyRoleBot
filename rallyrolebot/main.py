@@ -5,9 +5,10 @@ import asyncio
 import uvicorn
 import discord
 from discord.ext import commands, tasks
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from pydantic import BaseModel
 from api import channel_mappings, role_mappings, prefix_mappings, coin_mappings
+from api.dependencies import owner_or_admin
 
 import config
 import data
@@ -53,6 +54,7 @@ app = FastAPI(
     description="API for communicating with the Rally Role Bot for Discord",
     version="1.0.0",
     openapi_tags=tags_metadata,
+    dependencies=[Depends(owner_or_admin)],
 )
 
 app.include_router(channel_mappings.router)
