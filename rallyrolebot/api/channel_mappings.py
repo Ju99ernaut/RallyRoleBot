@@ -10,7 +10,7 @@ from constants import *
 
 class ChannelMapping(BaseModel):
     id: Optional[int] = None
-    guildId: str
+    guildId: Optional[str] = None
     coinKind: str
     requiredBalance: str
     channel: str
@@ -31,24 +31,24 @@ async def read_mappings(guildId: str):
 @router.post(
     "/mappings/channels", tags=["channels"], response_model=List[ChannelMapping]
 )
-async def add_mappings(mapping: ChannelMapping):
+async def add_mappings(mapping: ChannelMapping, guildId: str):
     data.add_channel_coin_mapping(
-        mapping[GUILD_ID_KEY],
+        guildId,
         mapping[COIN_KIND_KEY],
         mapping[REQUIRED_BALANCE_KEY],
         mapping[CHANNEL_NAME_KEY],
     )
-    return [mappings for mappings in data.get_channel_mappings(mapping[GUILD_ID_KEY])]
+    return [mappings for mappings in data.get_channel_mappings(guildId)]
 
 
 @router.delete(
     "/mappings/channels", tags=["channels"], response_model=List[ChannelMapping]
 )
-async def delete_mappings(mapping: ChannelMapping):
+async def delete_mappings(mapping: ChannelMapping, guildId: str):
     data.remove_channel_mapping(
-        mapping[GUILD_ID_KEY],
+        guildId,
         mapping[COIN_KIND_KEY],
         mapping[REQUIRED_BALANCE_KEY],
         mapping[CHANNEL_NAME_KEY],
     )
-    return [mappings for mappings in data.get_channel_mappings(mapping[GUILD_ID_KEY])]
+    return [mappings for mappings in data.get_channel_mappings(guildId)]
