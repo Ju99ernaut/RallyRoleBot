@@ -27,7 +27,7 @@ router = APIRouter()
 async def read_mappings(guildId: str):
     channels = []
     for mappings in data.get_channel_mappings(guildId):
-        roles.append(mappings)
+        channels.append(mappings)
     return channels
 
 
@@ -43,7 +43,7 @@ async def add_mappings(mapping: ChannelMapping):
     )
     channels = []
     for mappings in data.get_channel_mappings(mapping[GUILD_ID_KEY]):
-        roles.append(mappings)
+        channels.append(mappings)
     return channels
 
 
@@ -59,5 +59,5 @@ async def delete_mappings(mapping: ChannelMapping):
     )
     channels = []
     for mappings in data.get_channel_mappings(mapping[GUILD_ID_KEY]):
-        roles.append(mappings)
+        channels.append(mappings)
     return channels
