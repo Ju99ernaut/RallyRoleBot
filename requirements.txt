@@ -4,3 +4,5 @@ prospector
 discord.py
 requests
 dataset
+fastapi
+uvicorn[standard]
