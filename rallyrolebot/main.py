@@ -5,10 +5,10 @@ import asyncio
 import uvicorn
 import discord
 from discord.ext import commands, tasks
-from fastapi import Depends, FastAPI
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from api import channel_mappings, role_mappings, prefix_mappings, coin_mappings
-from api.dependencies import owner_or_admin
 
 import config
 import data
@@ -16,19 +16,6 @@ import json
 
 from cogs import *
 
-
-class Command(BaseModel):
-    name: str
-    description: str
-
-
-tags_metadata = [
-    {"name": "channels", "description": "Coin channel mappings"},
-    {"name": "coin", "description": "Default coin in guild"},
-    {"name": "commands", "description": "Get list of all available bot commands"},
-    {"name": "prefix", "description": "Command prefix in guild"},
-    {"name": "roles", "description": "Coin role mappings"},
-]
 
 config.parse_args()
 intents = discord.Intents.default()
@@ -49,12 +36,33 @@ bot.add_cog(rally_cog.RallyCommands(bot))
 bot.add_cog(defaults_cog.DefaultsCommands(bot))
 bot.add_cog(update_cog.UpdateTask(bot))
 
+
+class Command(BaseModel):
+    name: str
+    description: str
+
+
+tags_metadata = [
+    {"name": "channels", "description": "Coin channel mappings"},
+    {"name": "coin", "description": "Default coin in guild"},
+    {"name": "commands", "description": "Get list of all available bot commands"},
+    {"name": "prefix", "description": "Command prefix in guild"},
+    {"name": "roles", "description": "Coin role mappings"},
+]
+
 app = FastAPI(
     title="Rally Discord Bot API",
     description="API for communicating with the Rally Role Bot for Discord",
     version="1.0.0",
     openapi_tags=tags_metadata,
-    dependencies=[Depends(owner_or_admin)],
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(channel_mappings.router)
