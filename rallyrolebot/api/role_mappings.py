@@ -7,8 +7,6 @@ from pydantic import BaseModel
 
 from .dependencies import owner_or_admin
 
-from constants import *
-
 
 class RoleMapping(BaseModel):
     id: Optional[int] = None
@@ -30,23 +28,23 @@ async def read_mappings(guildId: str):
     return [mappings for mappings in data.get_role_mappings(guildId)]
 
 
-@router.post("/", response_model=List[RoleMapping])
+@router.post("", response_model=List[RoleMapping])
 async def add_mapping(mapping: RoleMapping, guildId: str):
     data.add_role_coin_mapping(
         guildId,
-        mapping[COIN_KIND_KEY],
-        mapping[REQUIRED_BALANCE_KEY],
-        mapping[ROLE_NAME_KEY],
+        mapping.coinKind,
+        mapping.requiredBalance,
+        mapping.roleName,
     )
     return [mappings for mappings in data.get_role_mappings(guildId)]
 
 
-@router.delete("/", response_model=List[RoleMapping])
+@router.delete("", response_model=List[RoleMapping])
 async def delete_mapping(mapping: RoleMapping, guildId: str):
     data.remove_role_mapping(
         guildId,
-        mapping[COIN_KIND_KEY],
-        mapping[REQUIRED_BALANCE_KEY],
-        mapping[ROLE_NAME_KEY],
+        mapping.coinKind,
+        mapping.requiredBalance,
+        mapping.roleName,
     )
     return [mappings for mappings in data.get_role_mappings(guildId)]
