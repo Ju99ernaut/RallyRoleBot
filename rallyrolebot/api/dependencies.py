@@ -23,7 +23,7 @@ def get_user(token):
     return result.json()
 
 
-def owner_or_admin_guilds(token):
+def owner_or_admin_guilds(authorization):
     url = DISCORD_API_URL + "/users/@me/guilds"
     headers = {"authorization": authorization}
     result = requests.get(url, headers=headers)
@@ -38,6 +38,6 @@ def owner_or_admin_guilds(token):
 
 
 async def owner_or_admin(guildId: str, authorization: str = Header(...)):
-    guilds = owner_or_admin_guilds(authorization, guildId)
-    if not guilds or guildId in guilds:
-        raise HTTPException(status_code=400, detail="you cannot modify this record")
+    guilds = owner_or_admin_guilds(authorization)
+    if not guilds or not guildId in guilds:
+        raise HTTPException(status_code=400, detail="you cannot access this record")
