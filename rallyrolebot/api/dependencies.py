@@ -2,15 +2,8 @@ from fastapi import Header, HTTPException
 
 import requests
 
+from rally_api import returnReqError
 from constants import *
-
-
-def returnReqError(url, result):
-    print("Request error!")
-    print(f"Url: {url}")
-    print(f"Status Code: {result.status_code}")
-    print(f"JSON result type: {type(result.json())}")
-    print(result.json())
 
 
 def get_user(token):
