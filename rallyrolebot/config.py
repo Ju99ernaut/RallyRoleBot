@@ -1,12 +1,16 @@
+import os
 import configargparse
 
 CONFIG = None
+secret_token = os.getenv("SECRET_KEY")
 
 arg_parser = configargparse.ArgParser(default_config_files=["config.txt"])
 
 arg_parser.add("-c", "--config", is_config_file=True, help="Config file")
 
-arg_parser.add("-t", "--secret_token", help="Discord bot login token")
+arg_parser.add(
+    "-t", "--secret_token", default=secret_token, help="Discord bot login token"
+)
 
 arg_parser.add(
     "-p", "--command_prefix", default="$", help="The symbol used before commands"
