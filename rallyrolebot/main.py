@@ -38,7 +38,6 @@ bot.add_cog(channel_cog.ChannelCommands(bot))
 bot.add_cog(rally_cog.RallyCommands(bot))
 bot.add_cog(defaults_cog.DefaultsCommands(bot))
 bot.add_cog(update_cog.UpdateTask(bot))
-bot.started = False
 
 
 app = FastAPI(
@@ -64,10 +63,7 @@ app.include_router(coin_mappings.router)
 
 @app.on_event("startup")
 async def startup_event():
-    if bot.started:
-        return 0
-    asyncio.get_event_loop().create_task(bot.start(config.CONFIG.secret_token))
-    bot.started = True
+    bot.run(config.CONFIG.secret_token)
 
 
 @app.get("/")
