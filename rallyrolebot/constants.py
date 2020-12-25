@@ -14,6 +14,7 @@ DEFAULT_COIN_TABLE = "default_coin"
 CONFIG_TABLE = "config"
 USERS_TABLE = "users"
 USERS_TOKEN_TABLE = "users_token"
+COMMANDS_TABLE = "commands"
 
 
 GUILD_ID_KEY = "guildId"
@@ -28,6 +29,8 @@ DISCREMINATOR_KEY = "discriminator"
 GUILDS_KEY = "guilds"
 TOKEN_KEY = "token"
 TIME_CREATED_KEY = "timeCreated"
+NAME_KEY = "name"
+DESCRIPTION_KEY = "description"
 
 PREFIX_KEY = "prefix"
 

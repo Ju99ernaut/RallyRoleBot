@@ -43,11 +43,14 @@ from utils.ext import connect_db
     discriminator
     guilds
     
-    
     #################### users_token ####################
     token
     discordId
     timeCreated
+    
+    #################### commands ####################
+    name
+    description
 
 """
 
@@ -292,3 +295,21 @@ def get_user_id(db, token):
         else:
             table.delete(token=token)
     return None
+
+
+@connect_db
+def add_command(db, name, description):
+    table = db[COMMANDS_TABLE]
+    table.upsert(
+        {
+            NAME_KEY: name,
+            DESCRIPTION_KEY: description,
+        },
+        [NAME_KEY],
+    )
+
+
+@connect_db
+def get_all_commands(db):
+    table = db[COMMANDS_TABLE]
+    return table.all()
