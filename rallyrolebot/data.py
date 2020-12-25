@@ -1,4 +1,5 @@
 import dataset
+import datetime
 
 import config
 from constants import *
@@ -35,6 +36,18 @@ from utils.ext import connect_db
     #################### server_config ####################
     purchaseMessage
     donateMessage
+    
+    #################### users ####################
+    discordId
+    username
+    discriminator
+    guilds
+    
+    
+    #################### users_token ####################
+    token
+    discordId
+    timeCreated
 
 """
 
@@ -229,4 +242,53 @@ def get_donate_message(db, guild_id):
     row = table.find_one(guildId=guild_id, configName=DONATE_MESSAGE_KEY)
     if row is not None:
         return row[DONATE_MESSAGE_KEY]
+    return None
+
+
+@connect_db
+def add_user(db, discord_id, username, discriminator, guilds):
+    table = db[USERS_TABLE]
+    table.upsert(
+        {
+            DISCORD_ID_KEY: discord_id,
+            USERNAME_KEY: username,
+            DISCREMINATOR_KEY: discriminator,
+            GUILDS_KEY: guilds,
+        },
+        [DISCORD_ID_KEY],
+    )
+
+
+@connect_db
+def get_user_guilds(db, discord_id):
+    table = db[USERS_TABLE]
+    row = table.find_one(discordId=discord_id)
+    if row is not None:
+        return row[GUILDS_KEY]
+    return None
+
+
+@connect_db
+def add_user_token(db, token, discord_id):
+    table = db[USERS_TOKEN_TABLE]
+    table.upsert(
+        {
+            TOKEN_KEY: token,
+            DISCORD_ID_KEY: discord_id,
+            TIME_CREATED_KEY: datetime.datetime.now(),
+        },
+        [TOKEN_KEY],
+    )
+
+
+@connect_db
+def get_user_id(db, token):
+    table = db[USERS_TOKEN_TABLE]
+    row = table.find_one(token=token)
+    if row is not None:
+        created = row[TIME_CREATED_KEY]
+        if (created + datetime.timedelta(hours=3)) >= datetime.datetime.now():
+            return row[DISCORD_ID_KEY]
+        else:
+            table.delete(token=token)
     return None
