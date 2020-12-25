@@ -38,6 +38,7 @@ bot.add_cog(channel_cog.ChannelCommands(bot))
 bot.add_cog(rally_cog.RallyCommands(bot))
 bot.add_cog(defaults_cog.DefaultsCommands(bot))
 bot.add_cog(update_cog.UpdateTask(bot))
+bot.started = False
 
 
 app = FastAPI(
@@ -60,15 +61,13 @@ app.include_router(role_mappings.router)
 app.include_router(prefix_mappings.router)
 app.include_router(coin_mappings.router)
 
-started = False
-
 
 @app.on_event("startup")
 async def startup_event():
-    if started:
+    if bot.started:
         return 0
     asyncio.get_event_loop().create_task(bot.start(config.CONFIG.secret_token))
-    started = True
+    bot.started = True
 
 
 @app.get("/")
@@ -85,4 +84,4 @@ async def read_commands():
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=int(os.getenv("PORT")) or 5000)
+    uvicorn.run("main:app", host="0.0.0.0", port=int(os.getenv("PORT") or 5000))
