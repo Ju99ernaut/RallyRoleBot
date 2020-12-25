@@ -63,7 +63,10 @@ app.include_router(coin_mappings.router)
 
 @app.on_event("startup")
 async def startup_event():
-    asyncio.get_event_loop().create_task(bot.start(config.CONFIG.secret_token))
+    botStart = asyncio.get_event_loop().create_task(
+        bot.start(config.CONFIG.secret_token)
+    )
+    await botStart
 
 
 @app.get("/")
