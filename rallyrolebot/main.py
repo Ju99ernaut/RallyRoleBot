@@ -9,12 +9,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from api import channel_mappings, role_mappings, prefix_mappings, coin_mappings
+from api.models import Command
 
 import config
 import data
 import json
 
 from cogs import *
+from constants import *
 
 
 config.parse_args()
@@ -37,24 +39,11 @@ bot.add_cog(defaults_cog.DefaultsCommands(bot))
 bot.add_cog(update_cog.UpdateTask(bot))
 
 
-class Command(BaseModel):
-    name: str
-    description: str
-
-
-tags_metadata = [
-    {"name": "channels", "description": "Coin channel mappings"},
-    {"name": "coin", "description": "Default coin in guild"},
-    {"name": "commands", "description": "Get list of all available bot commands"},
-    {"name": "prefix", "description": "Command prefix in guild"},
-    {"name": "roles", "description": "Coin role mappings"},
-]
-
 app = FastAPI(
     title="Rally Discord Bot API",
     description="API for communicating with the Rally Role Bot for Discord",
     version="1.0.0",
-    openapi_tags=tags_metadata,
+    openapi_tags=API_TAGS_METADATA,
 )
 
 app.add_middleware(

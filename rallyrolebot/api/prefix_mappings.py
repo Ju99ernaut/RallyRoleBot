@@ -1,16 +1,8 @@
 import data
 
-from typing import Optional
-
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
-
 from .dependencies import owner_or_admin
-
-
-class PrefixMapping(BaseModel):
-    guildId: Optional[str] = None
-    prefix: str
+from .models import PrefixMapping
 
 
 router = APIRouter(

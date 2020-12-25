@@ -1,19 +1,9 @@
 import data
 
-from typing import List, Optional
-
+from typing import List
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
-
 from .dependencies import owner_or_admin
-
-
-class RoleMapping(BaseModel):
-    id: Optional[int] = None
-    guildId: Optional[str] = None
-    coinKind: str
-    requiredBalance: str
-    roleName: str
+from .models import RoleMapping
 
 
 router = APIRouter(

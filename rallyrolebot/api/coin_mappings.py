@@ -1,16 +1,8 @@
 import data
 
-from typing import Optional
-
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
-
 from .dependencies import owner_or_admin
-
-
-class CoinMapping(BaseModel):
-    guildId: Optional[str] = None
-    coinKind: str
+from .models import CoinMapping
 
 
 router = APIRouter(
