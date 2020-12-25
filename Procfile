@@ -1,1 +1,1 @@
-worker: python rallyrolebot/main.py
+web: python rallyrolebot/main.py
