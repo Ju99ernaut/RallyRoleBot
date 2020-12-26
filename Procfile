@@ -1,2 +1,2 @@
-web: python rallyrolebot/app.py
-bot: python rallyrolebot/main.py
+web: python3 rallyrolebot/app.py
+bot: python3 rallyrolebot/main.py
