@@ -3,7 +3,6 @@ import configargparse
 
 CONFIG = None
 secret_token = os.getenv("SECRET_KEY")
-database_connection = os.getenv("DATABASE_URL") or "sqlite:///data.db"
 
 arg_parser = configargparse.ArgParser(default_config_files=["config.txt"])
 
@@ -15,13 +14,6 @@ arg_parser.add(
 
 arg_parser.add(
     "-p", "--command_prefix", default="$", help="The symbol used before commands"
-)
-
-arg_parser.add(
-    "-d",
-    "--database_connection",
-    default=database_connection,
-    help="An SQLAlchemy connection string",
 )
 
 
