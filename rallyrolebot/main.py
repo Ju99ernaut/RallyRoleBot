@@ -17,8 +17,11 @@ if __name__ == "__main__":
     default_prefix = config.CONFIG.command_prefix
 
     def prefix(bot, ctx):
-        guildId = ctx.guild.id
-        return data.get_prefix(guildId) or default_prefix
+        try:
+            guildId = ctx.guild.id
+            return data.get_prefix(guildId) or default_prefix
+        except:
+            return default_prefix
 
     bot = commands.Bot(command_prefix=prefix, intents=intents)
     bot.add_cog(role_cog.RoleCommands(bot))
