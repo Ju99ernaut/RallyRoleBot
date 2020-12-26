@@ -1,17 +1,18 @@
 import os
 import uvicorn
 
+from .config import parse_args
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from api import (
+from .api import (
     channel_mappings,
     role_mappings,
     prefix_mappings,
     coin_mappings,
     commands,
 )
-import config
 
 from constants import *
 
@@ -47,5 +48,5 @@ async def root():
 
 
 if __name__ == "__main__":
-    config.parse_args()
+    parse_args()
     uvicorn.run("app:app", host="0.0.0.0", port=int(os.getenv("PORT") or 5000))
