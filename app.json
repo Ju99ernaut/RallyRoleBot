@@ -11,6 +11,13 @@
     "addons": [
         "heroku-postgresql:hobby-dev"
     ],
+    "buildpacks": [{
+            "url": "https://github.com/heroku/heroku-buildpack-pgbouncer"
+        },
+        {
+            "url": "heroku/python"
+        }
+    ],
     "env": {
         "SECRET_TOKEN": {
             "description": "Bot secret token from discord",
