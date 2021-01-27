@@ -65,9 +65,7 @@ def connect_db(function):
 
         db = dataset.connect(url)
         result = function(db, *args, **kwargs)
-        db.commit()
-        db.close()
-            
+
         return result
 
     return wrapper
