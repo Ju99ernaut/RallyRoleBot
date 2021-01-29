@@ -6,6 +6,8 @@ import functools
 import dataset
 import config
 
+db = None
+
 
 def create_dm(cog_function):
     """
@@ -63,11 +65,12 @@ def connect_db(function):
         except:
             url = os.getenv("DATABASE_URL")
 
-        db = dataset.connect(url)
+        global db
+        if not db:
+            db = dataset.connect(url)
+
         result = function(db, *args, **kwargs)
-        db.commit()
-        db.close()
-            
+
         return result
 
     return wrapper
