@@ -66,7 +66,7 @@ def is_wallet_verified():
         if rally_id is None:
             raise errors.WalletNotVerified(
                 ctx.message.author.mention
-                + " hasn’t verified their wallet yet! Type !join"
+                + " you haven't verified your wallet yet! Use the `set_rally_id` command"
             )
         return True
 
