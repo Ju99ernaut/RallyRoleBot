@@ -95,3 +95,22 @@ class RallyCommands(commands.Cog):
     @validation.owner_or_permissions(administrator=True)
     async def admin_unset_rally_id(self, ctx, discord_id: discord.User, rally_id):
         data.remove_discord_rally_mapping(discord_id, rally_id)
+
+    @commands.command(name="balance", help="View your balance")
+    @commands.dm_only()
+    @validation.is_wallet_verified()
+    async def balance(self, ctx):
+        rally_id = data.get_rally_id(ctx.message.author.id)
+        balances = rally_api.get_balances(rally_id)
+
+        balanceStr = ""
+
+        for balance in balances:
+            balanceStr += f"{balance['coinKind']}: {balance['coinBalance']} (Est. USD$ {balance['estimatedInUsd']})\n"
+
+        await pretty_print(
+            ctx,
+            balanceStr,
+            title=f"{ctx.message.author.name}'s Balance",
+            color=WARNING_COLOR,
+        )
