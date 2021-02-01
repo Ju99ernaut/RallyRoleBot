@@ -72,7 +72,7 @@ def connect_db(function):
         except:
             url = os.getenv("DATABASE_URL")
 
-        db = dataset.connect(url, engine_kwargs)
+        db = dataset.connect(url, engine_kwargs=engine_kwargs)
 
         try:
             result = function(db, *args, **kwargs)
