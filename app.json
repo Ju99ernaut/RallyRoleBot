@@ -19,9 +19,9 @@
         "POOL_SIZE": {
             "description": "Connection pool size, keep the maximum number of connections in mind",
             "value": "5"
-        }
+        },
         "MAX_OVERFLOW": {
-            "description": "Connection pool maximum overflow, keep the maximum number of connections in mind",
+            "description": "Connection pool maximum overflow, max_connections = pool_size + max_overflow",
             "value": "2"
         }
     }

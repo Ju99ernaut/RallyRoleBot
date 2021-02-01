@@ -6,6 +6,8 @@ import functools
 import dataset
 import config
 
+db = None
+
 
 def create_dm(cog_function):
     """
@@ -56,13 +58,13 @@ def connect_db(function):
     @functools.wraps(function)
     def wrapper(*args, **kwargs):
         result = None
-        engine_kwargs = None
+        engine_kwargs = {}
 
         pool_size = os.getenv("POOL_SIZE")
         max_overflow = os.getenv("MAX_OVERFLOW")
 
         if pool_size:
-            engine_kwargs = {"pool_size": int(pool_size)}
+            engine_kwargs["pool_size"] = int(pool_size)}
 
         if max_overflow:
             engine_kwargs["max_overflow"] = int(max_overflow)
@@ -72,7 +74,9 @@ def connect_db(function):
         except:
             url = os.getenv("DATABASE_URL")
 
-        db = dataset.connect(url, engine_kwargs=engine_kwargs)
+        global db
+        if not db:
+            db = dataset.connect(url, engine_kwargs=engine_kwargs)
 
         try:
             result = function(db, *args, **kwargs)
