@@ -323,13 +323,12 @@ def get_all_commands(db):
 @connect_db
 def add_coin_price(db, price, coin):
     table = db[COIN_PRICE_TABLE]
-    table.upsert(
+    table.insert(
         {
             TIME_CREATED_KEY: datetime.datetime.now(),
             PRICE_KEY: price,
             COIN_KIND_KEY: coin,
-        },
-        [TIME_CREATED_KEY, PRICE_KEY, COIN_KIND_KEY],
+        }
     )
 
 
@@ -337,4 +336,4 @@ def add_coin_price(db, price, coin):
 def get_coin_prices(db, coin, limit):
     limit = limit or 50
     table = db[COIN_PRICE_TABLE]
-    return table.find(coinKind=coin, _limit=limit, order_by=TIME_CREATED_KEY)
+    return table.find(coinKind=coin, _limit=limit, order_by="-id")
