@@ -14,6 +14,7 @@ import data
 import rally_api
 import validation
 
+from utils import pretty_print
 
 async def grant_deny_channel_to_member(channel_mapping, member, balances):
     """
@@ -169,4 +170,45 @@ class UpdateTask(commands.Cog):
                 + " mappings. "
                 + str(member_count)
                 + " members."
+            )
+
+    @commands.command(help="updates your wallet balance / roles immediately")
+    @commands.guild_only()
+    async def set_wallet_id(self,ctx:commands.Context):
+        if not isinstance(ctx.author,discord.Member):
+            raise errors.MemberNotFound("command executer is not member")
+
+        member = ctx.author
+
+        with self.update_lock:
+            for guild in self.bot.guilds:
+                await guild.chunk()
+
+                if not member in guild.members:
+                    continue
+
+                role_mappings = list(data.get_role_mappings(guild.id))
+                channel_mappings = list(data.get_channel_mappings(guild.id))
+
+                rally_id=data.get_rally_id(member.id)
+                if rally_id:
+                    balances = rally_api.get_balances(rally_id)
+                    for role_mapping in role_mappings:
+                        try:
+                            await grant_deny_role_to_member(
+                                role_mapping, member, balances
+                            )
+                        except:
+                            raise errors.BadArgument()
+                    for channel_mapping in channel_mappings:
+                        try:
+                            await grant_deny_channel_to_member(
+                                channel_mapping, member, balances
+                            )
+                        except:
+                            raise errors.BadArgument()
+
+
+            await pretty_print(
+                ctx, "Command completed successfully!", title="Success", color=SUCCESS_COLOR
             )
