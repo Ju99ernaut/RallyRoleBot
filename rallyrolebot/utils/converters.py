@@ -23,3 +23,11 @@ class CreatorCoin(commands.Converter):
 
         data = rally_api.get_price_data(argument)
         return {"symbol": argument, "data": data}
+
+class CurrencyType(commands.Converter):
+    async def convert(self, ctx, argument):
+        currencyType = argument.upper()
+        if currencyType != "USD" and currencyType != "COIN":
+            raise errors.BadArgument("<currencyType> must be USD or COIN")
+
+        return currencyType
