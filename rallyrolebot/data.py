@@ -330,6 +330,12 @@ def add_coin_price(db, price, coin):
             COIN_KIND_KEY: coin,
         }
     )
+    
+    
+@connect_db
+def add_coin_price_multiple(db, prices):
+    table = db[COIN_PRICE_TABLE]
+    table.insert_many(prices)
 
 
 @connect_db
