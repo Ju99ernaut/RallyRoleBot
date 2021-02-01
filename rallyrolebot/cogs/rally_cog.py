@@ -99,7 +99,7 @@ class RallyCommands(commands.Cog):
         data.remove_discord_rally_mapping(discord_id, rally_id)
 
     @commands.command(name="coinlink", help="To generate a custom coin link, type $coinlink <CoinName> <COIN/USD> <Amount> <Memo>")
-    async def generate_deeplink(self,ctx, coin: Union[CreatorCoin, CommonCoin], currencyType:CurrencyType, amount:int, memo:str):
+    async def generate_coinlink_deeplink(self,ctx, coin: Union[CreatorCoin, CommonCoin], currencyType:CurrencyType, amount:int, memo:str):
 
         params = {"inputType":currencyType, "amount":amount, "note":memo}
         deeplink = 'https://www.rally.io/creator/' + coin["symbol"] + "/?" + urlencode(params)
