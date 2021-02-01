@@ -15,6 +15,14 @@
         "SECRET_TOKEN": {
             "description": "Bot secret token from discord",
             "value": "secret_token"
+        },
+        "POOL_SIZE": {
+            "description": "Connection pool size, keep the maximum number of connections in mind",
+            "value": "5"
+        }
+        "MAX_OVERFLOW": {
+            "description": "Connection pool maximum overflow, keep the maximum number of connections in mind",
+            "value": "2"
         }
     }
 }
