@@ -31,7 +31,7 @@ from utils.ext import connect_db
     
     #################### default_coin ######################
     guildId
-    coin
+    coinKind
 
     #################### server_config ####################
     purchaseMessage
@@ -51,6 +51,11 @@ from utils.ext import connect_db
     #################### commands ####################
     name
     description
+    
+    #################### coin_price #################
+    date
+    price
+    coinKind
 
 """
 
@@ -313,3 +318,23 @@ def add_command(db, name, description):
 def get_all_commands(db):
     table = db[COMMANDS_TABLE]
     return table.all()
+
+
+@connect_db
+def add_coin_price(db, price, coin):
+    table = db[COIN_PRICE_TABLE]
+    table.upsert(
+        {
+            TIME_CREATED_KEY: datetime.datetime.now(),
+            PRICE_KEY: price,
+            COIN_KIND_KEY: coin,
+        },
+        [TIME_CREATED_KEY, PRICE_KEY, COIN_KIND_KEY],
+    )
+
+
+@connect_db
+def get_coin_prices(db, coin, limit):
+    limit = limit or 50
+    table = db[COIN_PRICE_TABLE]
+    return table.find(coinKind=coin, _limit=limit, order_by=TIME_CREATED_KEY)

@@ -15,10 +15,11 @@ CONFIG_TABLE = "config"
 USERS_TABLE = "users"
 USERS_TOKEN_TABLE = "users_token"
 COMMANDS_TABLE = "commands"
+COIN_PRICE_TABLE = "coin_price"
 
 
 GUILD_ID_KEY = "guildId"
-COIN_KIND_KEY = "coinKind"
+PRICE_KEY = "priceInUsd"
 REQUIRED_BALANCE_KEY = "requiredBalance"
 ROLE_NAME_KEY = "roleName"
 CHANNEL_NAME_KEY = "channel"
@@ -81,4 +82,5 @@ API_TAGS_METADATA = [
     {"name": "commands", "description": "Get list of all available bot commands"},
     {"name": "prefix", "description": "Command prefix in guild"},
     {"name": "roles", "description": "Coin role mappings"},
+    {"name": "coins", "description": "Coin price data"},
 ]
