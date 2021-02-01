@@ -64,7 +64,7 @@ def connect_db(function):
         max_overflow = os.getenv("MAX_OVERFLOW")
 
         if pool_size:
-            engine_kwargs["pool_size"] = int(pool_size)}
+            engine_kwargs["pool_size"] = int(pool_size)
 
         if max_overflow:
             engine_kwargs["max_overflow"] = int(max_overflow)
