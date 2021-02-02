@@ -174,10 +174,7 @@ class UpdateTask(commands.Cog):
 
     @commands.command(help="updates your wallet balance / roles immediately")
     @commands.guild_only()
-    async def set_wallet_id(self,ctx:commands.Context):
-        if not isinstance(ctx.author,discord.Member):
-            raise errors.MemberNotFound("command executer is not member")
-
+    async def set_rally_id(self,ctx):
         member = ctx.author
 
         with self.update_lock:
@@ -198,15 +195,24 @@ class UpdateTask(commands.Cog):
                             await grant_deny_role_to_member(
                                 role_mapping, member, balances
                             )
+                        except discord.HTTPException:
+                            raise errors.RequestError("network error, try again later")
                         except:
-                            raise errors.BadArgument()
+                            # Forbidden, NotFound or Invalid Argument exceptions only called when code
+                            # or bot is wrongly synced / setup
+                            raise errors.FatalError("bot is setup wrong, call admin")
                     for channel_mapping in channel_mappings:
                         try:
                             await grant_deny_channel_to_member(
                                 channel_mapping, member, balances
                             )
+                        except discord.HTTPException:
+                            raise errors.RequestError("network error, try again later")
                         except:
-                            raise errors.BadArgument()
+                            # Forbidden, NotFound or Invalid Argument exceptions only called when code
+                            # or bot is wrongly synced / setup
+                            raise errors.FatalError("bot is setup wrong, call admin")
+
 
 
             await pretty_print(
