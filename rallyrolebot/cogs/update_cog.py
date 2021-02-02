@@ -16,6 +16,7 @@ import validation
 
 from utils import pretty_print
 
+
 async def grant_deny_channel_to_member(channel_mapping, member, balances):
     """
     Determine if the rally_id and balance for a channel is still valid for a particular member
@@ -174,7 +175,7 @@ class UpdateTask(commands.Cog):
 
     @commands.command(help="updates your wallet balance / roles immediately")
     @commands.guild_only()
-    async def set_rally_id(self,ctx):
+    async def set_rally_id(self, ctx):
         member = ctx.author
 
         with self.update_lock:
@@ -187,7 +188,7 @@ class UpdateTask(commands.Cog):
                 role_mappings = list(data.get_role_mappings(guild.id))
                 channel_mappings = list(data.get_channel_mappings(guild.id))
 
-                rally_id=data.get_rally_id(member.id)
+                rally_id = data.get_rally_id(member.id)
                 if rally_id:
                     balances = rally_api.get_balances(rally_id)
                     for role_mapping in role_mappings:
@@ -213,8 +214,9 @@ class UpdateTask(commands.Cog):
                             # or bot is wrongly synced / setup
                             raise errors.FatalError("bot is setup wrong, call admin")
 
-
-
             await pretty_print(
-                ctx, "Command completed successfully!", title="Success", color=SUCCESS_COLOR
+                ctx,
+                "Command completed successfully!",
+                title="Success",
+                color=SUCCESS_COLOR,
             )
