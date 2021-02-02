@@ -27,6 +27,11 @@ class RequestError(commands.CommandError):
         super().__init__(*args, **kwargs)
         self.message = message
 
+class FatalError(commands.CommandError):
+    def __init__(self, message, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.message = message
+
 
 def standard_error_handler(error_function):
     """
@@ -161,6 +166,11 @@ def standard_error_handler(error_function):
             return
 
         elif isinstance(error, RequestError):
+            await pretty_print(
+                ctx, error.message + extra, title="Error", color=ERROR_COLOR
+            )
+            return
+        elif isinstance(error, FatalError):
             await pretty_print(
                 ctx, error.message + extra, title="Error", color=ERROR_COLOR
             )
