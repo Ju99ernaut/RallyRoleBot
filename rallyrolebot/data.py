@@ -321,6 +321,12 @@ def get_all_commands(db):
 
 
 @connect_db
+def delete_all_commands(db):
+    table = db[COMMANDS_TABLE]
+    table.delete()
+
+
+@connect_db
 def add_coin_price(db, price, coin):
     table = db[COIN_PRICE_TABLE]
     table.insert(

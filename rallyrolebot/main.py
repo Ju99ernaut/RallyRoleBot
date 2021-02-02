@@ -30,6 +30,7 @@ if __name__ == "__main__":
     bot.add_cog(defaults_cog.DefaultsCommands(bot))
     bot.add_cog(update_cog.UpdateTask(bot))
 
+    data.delete_all_commands()
     for command in bot.commands:
         data.add_command(command.name, command.help)
 
