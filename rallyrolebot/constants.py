@@ -19,7 +19,7 @@ COIN_PRICE_TABLE = "coin_price"
 
 
 GUILD_ID_KEY = "guildId"
-PRICE_KEY = "priceInUsd"
+PRICE_KEY = "priceInUSD"
 REQUIRED_BALANCE_KEY = "requiredBalance"
 ROLE_NAME_KEY = "roleName"
 CHANNEL_NAME_KEY = "channel"
