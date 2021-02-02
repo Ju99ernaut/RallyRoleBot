@@ -336,8 +336,8 @@ def add_coin_price(db, price, coin):
             COIN_KIND_KEY: coin,
         }
     )
-    
-    
+
+
 @connect_db
 def add_coin_price_multiple(db, prices):
     table = db[COIN_PRICE_TABLE]
@@ -346,6 +346,12 @@ def add_coin_price_multiple(db, prices):
 
 @connect_db
 def get_coin_prices(db, coin, limit):
-    limit = limit or 50
+    limit = limit or 24
     table = db[COIN_PRICE_TABLE]
-    return table.find(coinKind=coin, _limit=limit, order_by="-id")
+    return table.find(coinKind=coin, order_by="-id", _limit=limit)
+
+
+@connect_db
+def get_last_24h_price(db, coin):
+    table = db[COIN_PRICE_TABLE]
+    return list(table.find(coinKind=coin, order_by="-id", _limit=24))[-1]
