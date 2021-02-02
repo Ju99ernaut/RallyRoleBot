@@ -60,7 +60,7 @@ def get_prices():
         try:
             symbol = coin["coinSymbol"]
             price = rally_api.get_current_price(symbol)
-            data.add_coin_price(price["priceInUsd"], symbol)
+            data.add_coin_price(str(price["priceInUsd"]), symbol)
         except:
             print(f"Failed to get price for {coin['coinSymbol']}")
     print("Price data updated")

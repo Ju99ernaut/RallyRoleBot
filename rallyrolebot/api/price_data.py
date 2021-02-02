@@ -16,12 +16,12 @@ async def read_price(coin: str, include_24hr_change: Optional[bool] = False):
         return {"coinKind": coin, "priceInUsd": price["priceInUsd"]}
     last_24hr = data.get_coin_prices(coin, limit=24)
     percentage_24h_change = (
-        (price["priceInUsd"] - last_24hr[-1]["price"]) / last_24hr[-1]["price"]
+        (float(price["priceInUsd"]) - float(last_24hr[-1]["price"])) / float(last_24hr[-1]["price"])
     ) * 100
     return {
         "coinKind": coin,
-        "priceInUsd": price["priceInUsd"],
-        "usd_24h_change": percentage_24h_change,
+        "priceInUsd": str(price["priceInUsd"]),
+        "usd_24h_change": str(percentage_24h_change),
     }
 
 
