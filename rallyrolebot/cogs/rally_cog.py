@@ -14,8 +14,10 @@ import coingecko_api
 import validation
 import errors
 
+from urllib.parse import urlencode
+
 from utils import pretty_print, send_to_dm, gradient
-from utils.converters import CreatorCoin, CommonCoin
+from utils.converters import CreatorCoin, CommonCoin, CurrencyType
 from constants import *
 
 
@@ -88,6 +90,28 @@ class RallyCommands(commands.Cog):
     async def unset_rally_id(self, ctx, rally_id):
         data.remove_discord_rally_mapping(ctx.author.id, rally_id)
 
+ 
+    @commands.command(
+        name="coinlink",
+        help="To generate a custom coin link, type $coinlink <CoinName> <COIN/USD> <Amount> <Memo>",
+    )
+    async def generate_coinlink_deeplink(
+        self,
+        ctx,
+        coin: Union[CreatorCoin, CommonCoin],
+        currencyType: CurrencyType,
+        amount: int,
+        memo: str,
+    ):
+
+        params = {"inputType": currencyType, "amount": amount, "note": memo}
+        deeplink = (
+            "https://www.rally.io/creator/" + coin["symbol"] + "/?" + urlencode(params)
+        )
+
+        await pretty_print(deeplink)
+
+
     @commands.command(name="balance", help="View your balance")
     @commands.dm_only()
     @validation.is_wallet_verified()
@@ -106,3 +130,4 @@ class RallyCommands(commands.Cog):
             title=f"{ctx.message.author.name}'s Balance",
             color=WARNING_COLOR,
         )
+
