@@ -235,7 +235,6 @@ class UpdateTask(commands.Cog):
                     data.set_avatar_timout(instance[GUILD_ID_KEY], 0)
                     avatar_timout = 0
 
-                print(avatar_timout)
                 if not avatar_timout:
                     # avatar change
                     try:
@@ -276,8 +275,7 @@ class UpdateTask(commands.Cog):
                         if instance[PREVIOUS_BOT_NAME_KEY] != instance[BOT_NAME_KEY]:
                             await bot_obj.user.edit(username=instance[BOT_NAME_KEY])
                             data.set_previous_name(instance[GUILD_ID_KEY], instance[BOT_NAME_KEY])
-                    except discord.HTTPException as e:
-                        print(e)
+                    except discord.HTTPException:
                         # user is editing name too many times, set 1h timeout
                         timout = round(time.time() + 3600)
                         data.set_name_timeout(instance[GUILD_ID_KEY], timout)

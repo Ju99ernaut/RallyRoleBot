@@ -39,10 +39,10 @@ class RallyCommands(commands.Cog):
             type(error), error, error.__traceback__, file=sys.stderr
         )
 
-    @commands.command(name="set_rally_id", help="Set your rally id")
-    @commands.dm_only()
-    async def set_rally_id(self, ctx, rally_id):
-        data.add_discord_rally_mapping(ctx.author.id, rally_id)
+    # @commands.command(name="set_rally_id", help="Set your rally id")
+    # @commands.dm_only()
+    # async def set_rally_id(self, ctx, rally_id):
+    #     data.add_discord_rally_mapping(ctx.author.id, rally_id)
 
     @commands.command(name="price", help="Get the price data of a coin")
     async def price(self, ctx, coin: Union[CreatorCoin, CommonCoin]):
