@@ -122,7 +122,6 @@ class UpdateTask(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.update_lock = threading.Lock()
-        self.update.start()
         self.api_update_lock = threading.Lock()
 
     async def start_bot_instance(self, bot_instance):
@@ -167,7 +166,8 @@ class UpdateTask(commands.Cog):
     async def on_ready(self):
         running_bots[self.bot.user.id] = {
             'bot': self.bot,
-            'token': self.bot.http.token
+            'token': self.bot.http.token,
+            'activity': None
         }
 
         if config.CONFIG.secret_token != self.bot.http.token:
@@ -177,6 +177,7 @@ class UpdateTask(commands.Cog):
             global main_bot
             main_bot = self.bot
             self.api_update.start()
+            self.update.start()
             asyncio.create_task(self.run_bot_instances())
 
         print("We have logged in as {0.user}".format(self.bot))
@@ -195,7 +196,7 @@ class UpdateTask(commands.Cog):
         self.update.restart()
         await ctx.send("Updating!")
 
-    @tasks.loop(seconds=1)
+    @tasks.loop(seconds=5)
     async def api_update(self):
         await self.bot.wait_until_ready()
         with self.api_update_lock:
@@ -283,6 +284,31 @@ class UpdateTask(commands.Cog):
                 if instance[BOT_NAME_KEY] != str(bot_obj.user.name):
                     data.set_bot_name(instance[GUILD_ID_KEY], str(bot_obj.user.name))
                     data.set_previous_name(instance[GUILD_ID_KEY], str(bot_obj.user.name))
+
+                # activity change
+                activity_type = instance[BOT_ACTIVITY_TYPE_KEY]
+                activity_text = instance[BOT_ACTIVITY_TEXT_KEY]
+
+                if activity_type and activity_text:
+                    if activity_type == 'playing':
+                        activity_type = discord.ActivityType.playing
+                    elif activity_type == 'listening':
+                        activity_type = discord.ActivityType.listening
+                    elif activity_type == 'competing':
+                        activity_type = discord.ActivityType.competing
+                    elif activity_type == 'watching':
+                        activity_type = discord.ActivityType.watching
+                    else:
+                        continue
+
+                    current_activity = running_bots[instance[BOT_ID_KEY]]['activity']
+
+                    if (current_activity and current_activity.type == activity_type) and repr(current_activity.name) == repr(activity_text):
+                        continue
+
+                    new_activity = discord.Activity(type=activity_type, name=activity_text)
+                    running_bots[instance[BOT_ID_KEY]]['activity'] = new_activity
+                    await bot_obj.change_presence(status=discord.Status.online, activity=new_activity)
 
     @tasks.loop(seconds=UPDATE_WAIT_TIME)
     async def update(self):

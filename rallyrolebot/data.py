@@ -400,6 +400,8 @@ def add_bot_instance(db, guildId, bot_instance):
             BOT_ID_KEY: 0,
             AVATAR_TIMEOUT_KEY: 0,
             NAME_TIMEOUT_KEY: 0,
+            BOT_ACTIVITY_TYPE_KEY: "",
+            BOT_ACTIVITY_TEXT_KEY: ""
         }
     )
 
@@ -457,6 +459,19 @@ def set_name_timeout(db, guildId, timeout):
     table.upsert(
         {
             NAME_TIMEOUT_KEY: timeout,
+            GUILD_ID_KEY: guildId,
+        },
+        [GUILD_ID_KEY],
+    )
+
+
+@connect_db
+def set_activity(db, guildId, activity_type, activity_text):
+    table = db[BOT_INSTANCES_KEY]
+    table.upsert(
+        {
+            BOT_ACTIVITY_TYPE_KEY: activity_type,
+            BOT_ACTIVITY_TEXT_KEY: activity_text,
             GUILD_ID_KEY: guildId,
         },
         [GUILD_ID_KEY],

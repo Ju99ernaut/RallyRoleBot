@@ -36,6 +36,8 @@ BOT_AVATAR_KEY = "botAvatar"
 BOT_ID_KEY = 'botId'
 AVATAR_TIMEOUT_KEY = 'avatarTimeout'
 NAME_TIMEOUT_KEY = 'nameTimeout'
+BOT_ACTIVITY_TEXT_KEY = 'botActivityText'
+BOT_ACTIVITY_TYPE_KEY = 'botActivityType'
 
 USERNAME_KEY = "username"
 DISCRIMINATOR_KEY = "discriminator"
