@@ -9,12 +9,24 @@ from discord.utils import get
 
 from constants import *
 
+import cogs.role_cog
+import cogs.rally_cog
+import cogs.defaults_cog
+import cogs.channel_cog
+import aiohttp
+
+import config
+import asyncio
 import errors
 import data
 import rally_api
 import validation
 
 from utils import pretty_print
+
+main_bot = None
+running_bots = {}
+running_bot_instances = []
 
 
 async def grant_deny_channel_to_member(channel_mapping, member, balances):
@@ -110,9 +122,62 @@ class UpdateTask(commands.Cog):
         self.bot = bot
         self.update_lock = threading.Lock()
         self.update.start()
+        self.api_update_lock = threading.Lock()
+
+    async def start_bot_instance(self, bot_instance):
+        config.parse_args()
+        intents = discord.Intents.default()
+        intents.guilds = True
+        intents.members = True
+        default_prefix = config.CONFIG.command_prefix
+
+        def prefix(bot, ctx):
+            try:
+                guildId = ctx.guild.id
+                return data.get_prefix(guildId) or default_prefix
+            except:
+                return default_prefix
+
+        bot = commands.Bot(command_prefix=prefix, intents=intents)
+        bot.add_cog(cogs.role_cog.RoleCommands(bot))
+        bot.add_cog(cogs.channel_cog.ChannelCommands(bot))
+        bot.add_cog(cogs.rally_cog.RallyCommands(bot))
+        bot.add_cog(cogs.defaults_cog.DefaultsCommands(bot))
+        bot.add_cog(cogs.update_cog.UpdateTask(bot))
+
+        for command in bot.commands:
+            data.add_command(command.name, command.help)
+
+        try:
+            await bot.start(bot_instance)
+
+        finally:
+            if not bot.is_closed():
+                await bot.close()
+
+    async def run_bot_instances(self):
+        all_bot_instances = data.get_all_bot_instances()
+        if all_bot_instances:
+            for instance in all_bot_instances:
+                running_bot_instances.append(instance[BOT_INSTANCE_KEY])
+                asyncio.create_task(self.start_bot_instance(instance[BOT_INSTANCE_KEY]))
 
     @commands.Cog.listener()
     async def on_ready(self):
+        running_bots[self.bot.user.id] = {
+            'bot': self.bot,
+            'token': self.bot.http.token
+        }
+
+        if config.CONFIG.secret_token != self.bot.http.token:
+            data.set_bot_id(self.bot.user.id, self.bot.http.token)
+
+        if not running_bot_instances:
+            global main_bot
+            main_bot = self.bot
+            self.api_update.start()
+            asyncio.create_task(self.run_bot_instances())
+
         print("We have logged in as {0.user}".format(self.bot))
 
     @errors.standard_error_handler
@@ -129,8 +194,75 @@ class UpdateTask(commands.Cog):
         self.update.restart()
         await ctx.send("Updating!")
 
+    @tasks.loop(seconds=1)
+    async def api_update(self):
+        await self.bot.wait_until_ready()
+        with self.api_update_lock:
+            instances = data.get_all_bot_instances()
+            if instances is None:
+                instances = []
+
+            for instance in instances:
+                if instance[BOT_INSTANCE_KEY] not in running_bot_instances:
+                    # start running new bot instances
+                    if instance[BOT_INSTANCE_KEY] not in running_bot_instances:
+                        running_bot_instances.append(instance[BOT_INSTANCE_KEY])
+                        asyncio.create_task(self.start_bot_instance(instance[BOT_INSTANCE_KEY]))
+                        continue
+
+            for running_instance in running_bot_instances:
+                instance = data.get_bot_instance_token(running_instance)
+                # stop deleted instances
+                if instance is None:
+                    running_bot_instances.remove(running_instance)
+                    to_be_removed = [b for b in running_bots if running_bots[b]['token'] == running_instance]
+                    if to_be_removed:
+                        await running_bots[to_be_removed[0]]['bot'].close()
+                        del running_bots[to_be_removed[0]]
+
+                    continue
+
+                bot_obj = [running_bots[b]['bot'] for b in running_bots if b == instance[BOT_ID_KEY]]
+                if not bot_obj:
+                    continue
+
+                bot_obj = bot_obj[0]
+
+                # avatar change
+                try:
+                    if instance[PREVIOUS_BOT_AVATAR_KEY] != instance[BOT_AVATAR_KEY]:
+                        url = instance[BOT_AVATAR_KEY]
+                        if url.startswith('file://'):
+                            avatar = open(url.replace("file://", ""), 'rb').read()
+                        else:
+                            async with aiohttp.ClientSession() as session:
+                                async with session.get(url) as response:
+                                    avatar = await response.read()
+
+                        await bot_obj.user.edit(avatar=avatar)
+                        data.set_bot_avatar(instance[GUILD_ID_KEY], str(bot_obj.user.avatar_url))
+                        data.set_previous_avatar(instance[GUILD_ID_KEY], str(bot_obj.user.avatar_url))
+                except:
+                    data.set_bot_avatar(instance[GUILD_ID_KEY], str(bot_obj.user.avatar_url))
+                    data.set_previous_avatar(instance[GUILD_ID_KEY], str(bot_obj.user.avatar_url))
+
+                # name change
+                try:
+                    if not instance[BOT_NAME_KEY]:
+                        data.set_bot_name(instance[GUILD_ID_KEY], bot_obj.user.name)
+                        data.set_previous_name(instance[GUILD_ID_KEY], bot_obj.user.name)
+
+                    if instance[PREVIOUS_BOT_NAME_KEY] != instance[BOT_NAME_KEY]:
+                        await bot_obj.user.edit(username=instance[BOT_NAME_KEY])
+                        data.set_previous_name(instance[GUILD_ID_KEY], instance[BOT_NAME_KEY])
+                except:
+                    data.set_bot_name(instance[GUILD_ID_KEY], bot_obj.user.name)
+                    data.set_previous_name(instance[GUILD_ID_KEY], bot_obj.user.name)
+
+
     @tasks.loop(seconds=UPDATE_WAIT_TIME)
     async def update(self):
+        await self.bot.wait_until_ready()
         with self.update_lock:
 
             print("Updating roles")

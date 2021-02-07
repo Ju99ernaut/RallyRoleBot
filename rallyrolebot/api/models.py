@@ -31,3 +31,15 @@ class PrefixMapping(BaseModel):
 class Command(BaseModel):
     name: str
     description: str
+
+
+class BotNameMapping(BaseModel):
+    bot_name: str
+
+
+class BotAvatarMapping(BaseModel):
+    bot_avatar: str
+
+
+class BotInstanceMapping(BaseModel):
+    bot_instance: str

@@ -7,10 +7,12 @@ import discord
 from discord.ext import commands, tasks
 from discord.utils import get
 
+from constants import *
 import data
 import rally_api
 import validation
 import errors
+import aiohttp
 
 from cogs import update_cog
 
@@ -74,6 +76,42 @@ class DefaultsCommands(commands.Cog):
     @validation.owner_or_permissions(administrator=True)
     async def set_prefix(self, ctx, prefix):
         data.add_prefix_mapping(ctx.guild.id, prefix)
+
+    @commands.command(
+        name="change_bot_name",
+        help="Change the bot's name on this server"
+    )
+    @commands.is_owner()
+    async def set_bot_name(self, ctx, *, name=""):
+        bot_instance = update_cog.running_bots[self.bot.user.id]['token']
+        data.set_bot_name(bot_instance, name)
+
+        try:
+            await self.bot.user.edit(username=name)
+            data.set_previous_name(ctx.guild.id, name)
+        except Exception as e:
+            return await ctx.send(f'Error: {e.text.split(":")[-1]}')
+
+    @commands.command(
+        name="change_bot_avatar",
+        help="Changes the bot's avatar"
+    )
+    @commands.is_owner()
+    async def set_bot_avatar(self, ctx, url=None):
+        if url is None:
+            url = DEFAULT_BOT_AVATAR_URL
+
+        data.set_bot_avatar(ctx.guild.id, url)
+
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as response:
+                    avatar = await response.read()
+
+            await self.bot.user.edit(avatar=avatar)
+            data.set_previous_avatar(ctx.guild.id, url)
+        except:
+            return await ctx.send('Error setting new bot avatar')
 
     @commands.command(
         name="role_call",

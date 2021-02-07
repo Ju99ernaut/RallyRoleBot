@@ -8,6 +8,9 @@ from api import (
     prefix_mappings,
     coin_mappings,
     commands,
+    bot_avatar_mappings,
+    bot_instance_mappings,
+    bot_name_mappings
 )
 import config
 
@@ -34,6 +37,9 @@ app.include_router(role_mappings.router)
 app.include_router(prefix_mappings.router)
 app.include_router(coin_mappings.router)
 app.include_router(commands.router)
+app.include_router(bot_instance_mappings.router)
+app.include_router(bot_name_mappings.router)
+app.include_router(bot_avatar_mappings.router)
 
 
 @app.get("/")

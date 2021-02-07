@@ -4,6 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from .dependencies import owner_or_admin
 from .models import CoinMapping
 
+import config
+config.parse_args()
 
 router = APIRouter(
     prefix="/mappings/coin",

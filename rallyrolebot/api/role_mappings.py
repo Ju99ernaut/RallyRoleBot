@@ -5,6 +5,8 @@ from fastapi import APIRouter, Depends
 from .dependencies import owner_or_admin
 from .models import RoleMapping
 
+import config
+config.parse_args()
 
 router = APIRouter(
     prefix="/mappings/roles",
