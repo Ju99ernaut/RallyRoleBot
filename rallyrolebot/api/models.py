@@ -35,10 +35,13 @@ class Command(BaseModel):
 
 class BotNameMapping(BaseModel):
     bot_name: str
+    name_timeout: Optional[int] = None
 
 
 class BotAvatarMapping(BaseModel):
     bot_avatar: str
+    avatar_timeout: Optional[int] = None
+    guildId: Optional[str] = None
 
 
 class BotInstanceMapping(BaseModel):

@@ -2,6 +2,7 @@ import json
 import sys
 import traceback
 import threading
+import time
 
 import discord
 from discord.ext import commands, tasks
@@ -228,37 +229,62 @@ class UpdateTask(commands.Cog):
 
                 bot_obj = bot_obj[0]
 
-                # avatar change
-                try:
-                    if instance[PREVIOUS_BOT_AVATAR_KEY] != instance[BOT_AVATAR_KEY]:
-                        url = instance[BOT_AVATAR_KEY]
-                        if url.startswith('file://'):
-                            avatar = open(url.replace("file://", ""), 'rb').read()
-                        else:
-                            async with aiohttp.ClientSession() as session:
-                                async with session.get(url) as response:
-                                    avatar = await response.read()
+                # avatar timout
+                avatar_timout = instance[AVATAR_TIMEOUT_KEY]
+                if avatar_timout and int(avatar_timout) <= time.time():
+                    data.set_avatar_timout(instance[GUILD_ID_KEY], 0)
+                    avatar_timout = 0
 
-                        await bot_obj.user.edit(avatar=avatar)
-                        data.set_bot_avatar(instance[GUILD_ID_KEY], str(bot_obj.user.avatar_url))
-                        data.set_previous_avatar(instance[GUILD_ID_KEY], str(bot_obj.user.avatar_url))
-                except:
+                print(avatar_timout)
+                if not avatar_timout:
+                    # avatar change
+                    try:
+                        if instance[PREVIOUS_BOT_AVATAR_KEY] != instance[BOT_AVATAR_KEY]:
+                            url = instance[BOT_AVATAR_KEY]
+                            if url.startswith('file://'):
+                                avatar = open(url.replace("file://", ""), 'rb').read()
+                            else:
+                                async with aiohttp.ClientSession() as session:
+                                    async with session.get(url) as response:
+                                        avatar = await response.read()
+
+                            await bot_obj.user.edit(avatar=avatar)
+                    except discord.HTTPException:
+                        # user is editing avatar too many times, set 1h timeout
+                        timout = round(time.time() + 3600)
+                        data.set_avatar_timout(instance[GUILD_ID_KEY], timout)
+                    except:
+                        pass
+
+                if instance[BOT_AVATAR_KEY] != str(bot_obj.user.avatar_url):
                     data.set_bot_avatar(instance[GUILD_ID_KEY], str(bot_obj.user.avatar_url))
                     data.set_previous_avatar(instance[GUILD_ID_KEY], str(bot_obj.user.avatar_url))
 
+                # name timout
+                name_timout = instance[NAME_TIMEOUT_KEY]
+                if name_timout and int(name_timout) <= time.time():
+                    data.set_name_timeout(instance[GUILD_ID_KEY], 0)
+                    name_timout = 0
+
                 # name change
-                try:
-                    if not instance[BOT_NAME_KEY]:
-                        data.set_bot_name(instance[GUILD_ID_KEY], bot_obj.user.name)
-                        data.set_previous_name(instance[GUILD_ID_KEY], bot_obj.user.name)
+                if not name_timout:
+                    try:
+                        if not instance[BOT_NAME_KEY]:
+                            data.set_bot_name(instance[GUILD_ID_KEY], bot_obj.user.name)
+                            data.set_previous_name(instance[GUILD_ID_KEY], bot_obj.user.name)
 
-                    if instance[PREVIOUS_BOT_NAME_KEY] != instance[BOT_NAME_KEY]:
-                        await bot_obj.user.edit(username=instance[BOT_NAME_KEY])
-                        data.set_previous_name(instance[GUILD_ID_KEY], instance[BOT_NAME_KEY])
-                except:
-                    data.set_bot_name(instance[GUILD_ID_KEY], bot_obj.user.name)
-                    data.set_previous_name(instance[GUILD_ID_KEY], bot_obj.user.name)
+                        if instance[PREVIOUS_BOT_NAME_KEY] != instance[BOT_NAME_KEY]:
+                            await bot_obj.user.edit(username=instance[BOT_NAME_KEY])
+                            data.set_previous_name(instance[GUILD_ID_KEY], instance[BOT_NAME_KEY])
+                    except discord.HTTPException as e:
+                        print(e)
+                        # user is editing name too many times, set 1h timeout
+                        timout = round(time.time() + 3600)
+                        data.set_name_timeout(instance[GUILD_ID_KEY], timout)
 
+                if instance[BOT_NAME_KEY] != str(bot_obj.user.name):
+                    data.set_bot_name(instance[GUILD_ID_KEY], str(bot_obj.user.name))
+                    data.set_previous_name(instance[GUILD_ID_KEY], str(bot_obj.user.name))
 
     @tasks.loop(seconds=UPDATE_WAIT_TIME)
     async def update(self):

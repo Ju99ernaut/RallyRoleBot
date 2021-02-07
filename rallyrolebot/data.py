@@ -254,7 +254,7 @@ def add_user(db, discord_id, username, discriminator, guilds):
         {
             DISCORD_ID_KEY: discord_id,
             USERNAME_KEY: username,
-            DISCREMINATOR_KEY: discriminator,
+            DISCRIMINATOR_KEY: discriminator,
             GUILDS_KEY: guilds,
         },
         [DISCORD_ID_KEY],
@@ -316,7 +316,6 @@ def get_all_commands(db):
 
 @connect_db
 def set_bot_avatar(db, guildId, bot_avatar):
-    print(guildId, bot_avatar)
     table = db[BOT_INSTANCES_KEY]
     table.update(
         {
@@ -398,7 +397,9 @@ def add_bot_instance(db, guildId, bot_instance):
             BOT_AVATAR_KEY: DEFAULT_BOT_AVATAR_URL,
             PREVIOUS_BOT_NAME_KEY: "",
             BOT_NAME_KEY: "",
-            BOT_ID_KEY: 0
+            BOT_ID_KEY: 0,
+            AVATAR_TIMEOUT_KEY: 0,
+            NAME_TIMEOUT_KEY: 0,
         }
     )
 
@@ -436,3 +437,27 @@ def get_all_bot_instances(db):
     table = db[BOT_INSTANCES_KEY]
     instances = table.all()
     return [i for i in instances]
+
+
+@connect_db
+def set_avatar_timout(db, guildId, timout):
+    table = db[BOT_INSTANCES_KEY]
+    table.upsert(
+        {
+            AVATAR_TIMEOUT_KEY: timout,
+            GUILD_ID_KEY: guildId,
+        },
+        [GUILD_ID_KEY],
+    )
+
+
+@connect_db
+def set_name_timeout(db, guildId, timeout):
+    table = db[BOT_INSTANCES_KEY]
+    table.upsert(
+        {
+            NAME_TIMEOUT_KEY: timeout,
+            GUILD_ID_KEY: guildId,
+        },
+        [GUILD_ID_KEY],
+    )

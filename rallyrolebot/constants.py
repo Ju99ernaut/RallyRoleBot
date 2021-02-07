@@ -34,9 +34,11 @@ BOT_NAME_KEY = "botName"
 PREVIOUS_BOT_NAME_KEY = 'previousBotName'
 BOT_AVATAR_KEY = "botAvatar"
 BOT_ID_KEY = 'botId'
+AVATAR_TIMEOUT_KEY = 'avatarTimeout'
+NAME_TIMEOUT_KEY = 'nameTimeout'
 
 USERNAME_KEY = "username"
-DISCREMINATOR_KEY = "discriminator"
+DISCRIMINATOR_KEY = "discriminator"
 GUILDS_KEY = "guilds"
 TOKEN_KEY = "token"
 TIME_CREATED_KEY = "timeCreated"

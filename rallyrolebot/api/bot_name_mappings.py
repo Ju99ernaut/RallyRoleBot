@@ -22,16 +22,19 @@ async def read_mapping(guildId: str):
     if not bot_instance:
         return {"guildId": guildId, "bot_name": "rallybot"}
 
-    return {"guildId": guildId, "bot_name": bot_instance[BOT_NAME_KEY]}
+    return {"guildId": guildId, "bot_name": bot_instance[BOT_NAME_KEY], 'name_timeout': int(bool(bot_instance[NAME_TIMEOUT_KEY]))}
 
 
 @router.post("/", response_model=BotNameMapping)
 async def add_mapping(mapping: BotNameMapping, guildId: str):
-    if mapping.bot_name is not None:
-        data.set_bot_name(guildId, mapping.bot_name)
-
-    instance = data.get_bot_instance(guildId)
-    if not instance:
+    bot_instance = data.get_bot_instance(guildId)
+    if not bot_instance:
         raise HTTPException(status_code=404, detail="Bot config not found")
 
-    return {"guildId": guildId, "bot_name": mapping.bot_name}
+    if mapping.bot_name is not None and not bot_instance[NAME_TIMEOUT_KEY]:
+        data.set_bot_name(guildId, mapping.bot_name)
+        bot_name = mapping.bot_name
+    else:
+        bot_name = bot_instance[NAME_KEY]
+
+    return {"guildId": guildId, "bot_name": bot_name, 'name_timeout': int(bool(bot_instance[NAME_TIMEOUT_KEY]))}
