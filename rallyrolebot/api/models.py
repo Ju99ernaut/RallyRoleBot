@@ -46,6 +46,13 @@ class BotAvatarMapping(BaseModel):
 
 class BotInstanceMapping(BaseModel):
     bot_instance: str
+    activity_type: Optional[str] = None
+    activity_text: Optional[str] = None
+    bot_avatar: Optional[str] = None
+    avatar_timeout: Optional[int] = None
+    bot_name: Optional[str] = None
+    bot_id: Optional[int] = None
+    name_timeout: Optional[int] = None
 
 
 class BotActivityMapping(BaseModel):

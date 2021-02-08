@@ -23,7 +23,17 @@ async def read_mapping(guildId: str):
     if not bot_instance:
         raise HTTPException(status_code=404, detail="Bot config not found")
 
-    return {"bot_instance": bot_instance[BOT_INSTANCE_KEY], "guildId": guildId, "bot_id": str(bot_instance[BOT_ID_KEY])}
+    return {
+        "bot_instance": bot_instance[BOT_INSTANCE_KEY],
+        "bot_avatar": bot_instance[BOT_AVATAR_KEY],
+        "bot_name": bot_instance[BOT_NAME_KEY],
+        'avatar_timout': bot_instance[AVATAR_TIMEOUT_KEY],
+        'name_timeout': bot_instance[NAME_TIMEOUT_KEY],
+        'activity_type': bot_instance[BOT_ACTIVITY_TYPE_KEY],
+        'activity_text': bot_instance[BOT_ACTIVITY_TEXT_KEY],
+        'bot_id': bot_instance[BOT_ID_KEY],
+        "guildId": guildId
+    }
 
 
 @router.post("/", response_model=BotInstanceMapping)
