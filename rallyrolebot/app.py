@@ -20,6 +20,7 @@ import rally_api
 
 from constants import *
 
+config.parse_args()
 logger = logging.getLogger(__name__)
 app = FastAPI(
     title="Rally Discord Bot API",
@@ -63,9 +64,13 @@ def get_prices():
             data.add_coin_price(str(price["priceInUSD"]), symbol)
         except:
             print(f"Failed to get price for {coin['coinSymbol']}")
-    print("Price data updated")
+    count = data.price_count()
+    max = int(config.CONFIG.cache_max)
+    print(f"Price cache updated, Count: {count}, Max: {max}")
+    if count > max:
+        data.clean_price_cache(count - max)
+        print(f"{count - max} cache entries removed")
 
 
 if __name__ == "__main__":
-    config.parse_args()
     uvicorn.run("app:app", host=config.CONFIG.host, port=int(config.CONFIG.port))

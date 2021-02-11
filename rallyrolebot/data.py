@@ -345,6 +345,20 @@ def add_coin_price_multiple(db, prices):
 
 
 @connect_db
+def clean_price_cache(db, limit):
+    table = db[COIN_PRICE_TABLE]
+    old = table.all(order_by="id", _limit=limit)
+    for price in old:
+        table.delete(id=price["id"])
+
+
+@connect_db
+def price_count(db):
+    table = db[COIN_PRICE_TABLE]
+    return table.__len__()
+
+
+@connect_db
 def get_coin_prices(db, coin, limit):
     limit = limit or 24
     table = db[COIN_PRICE_TABLE]
