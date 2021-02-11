@@ -1,15 +1,13 @@
 import data
-import re
-import base64
-import os
 
-import config
-config.parse_args()
-
+from cogs.update_cog import running_bots, update_activity
 from fastapi import APIRouter, Depends, HTTPException
 from .dependencies import owner_or_admin
 from .models import BotActivityMapping
 from constants import *
+
+import config
+config.parse_args()
 
 
 router = APIRouter(
@@ -39,7 +37,8 @@ async def add_mapping(mapping: BotActivityMapping, guildId):
     if not bot_instance:
         raise HTTPException(status_code=404, detail="Bot config not found")
 
-    if mapping.activity_type is not None and mapping.activity_text is not None:
-        data.set_activity(guildId, mapping.activity_type, mapping.activity_text)
+    error = await update_activity(bot_instance, mapping.activity_type, mapping.activity_text)
+    if error:
+        raise HTTPException(status_code=500, detail="Error changing bot activity")
 
     return {"success": 1}

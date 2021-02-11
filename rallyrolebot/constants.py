@@ -25,13 +25,11 @@ CHANNEL_NAME_KEY = "channel"
 DISCORD_ID_KEY = "discordId"
 RALLY_ID_KEY = "rallyId"
 
-BOT_INSTANCE_KEY = 'botInstance'
+BOT_TOKEN_KEY = 'botToken'
 BOT_INSTANCES_KEY = 'botInstances'
-PREVIOUS_BOT_AVATAR_KEY = 'previousBotAvatar'
 OWNER_ID_KEY = 'ownerId'
 TIME_ADDED_KEY = 'timeAdded'
 BOT_NAME_KEY = "botName"
-PREVIOUS_BOT_NAME_KEY = 'previousBotName'
 BOT_AVATAR_KEY = "botAvatar"
 BOT_ID_KEY = 'botId'
 AVATAR_TIMEOUT_KEY = 'avatarTimeout'

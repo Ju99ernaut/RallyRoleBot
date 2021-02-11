@@ -118,13 +118,69 @@ async def force_update(bot, ctx):
     await bot.get_cog("UpdateTask").force_update(ctx)
 
 
+async def update_activity(bot_instance, new_activity_type, new_activity_text):
+    error = False
+    if new_activity_type and new_activity_text:
+        if new_activity_type == 'playing':
+            activity_type = discord.ActivityType.playing
+        elif new_activity_type == 'listening':
+            activity_type = discord.ActivityType.listening
+        elif new_activity_type == 'competing':
+            activity_type = discord.ActivityType.competing
+        elif new_activity_type == 'watching':
+            activity_type = discord.ActivityType.watching
+        else:
+            error = True
+            return error
+
+        current_activity = running_bots[bot_instance[BOT_ID_KEY]]['activity']
+        bot_object = running_bots[bot_instance[BOT_ID_KEY]]['bot']
+
+        try:
+            if not current_activity or (current_activity and current_activity.type != new_activity_text) or \
+                    (current_activity and repr(current_activity.name) != repr(new_activity_text)):
+                # check that current_activity isnt duplicate of new activity
+                new_activity = discord.Activity(type=activity_type, name=new_activity_text)
+                running_bots[bot_instance[BOT_ID_KEY]]['activity'] = new_activity
+                await bot_object.change_presence(status=discord.Status.online, activity=new_activity)
+                data.set_activity(bot_instance[GUILD_ID_KEY], new_activity_type, new_activity_text)
+        except:
+            error = True
+
+    return error
+
+
+async def update_avatar(bot_instance, new_avatar=None):
+    if new_avatar is None:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(DEFAULT_BOT_AVATAR_URL) as response:
+                new_avatar = await response.read()
+
+    error = False
+    # avatar change
+    try:
+        bot_object = running_bots[bot_instance[BOT_ID_KEY]]['bot']
+        await bot_object.user.edit(avatar=new_avatar)
+        data.set_bot_avatar(bot_instance[GUILD_ID_KEY], str(bot_object.user.avatar_url))
+    except discord.HTTPException:
+        # user is editing avatar too many times, set 1h timeout
+        timout = round(time.time() + 3600)
+        data.set_avatar_timout(bot_instance[GUILD_ID_KEY], timout)
+        bot_instance[AVATAR_TIMEOUT_KEY] = timout
+    except Exception as e:
+        print(e)
+        error = True
+
+    return error
+
+
 class UpdateTask(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.update_lock = threading.Lock()
-        self.api_update_lock = threading.Lock()
 
-    async def start_bot_instance(self, bot_instance):
+    @staticmethod
+    async def start_bot_instance(bot_instance):
         config.parse_args()
         intents = discord.Intents.default()
         intents.guilds = True
@@ -155,12 +211,14 @@ class UpdateTask(commands.Cog):
             if not bot.is_closed():
                 await bot.close()
 
+        running_bot_instances.remove(bot_instance[BOT_TOKEN_KEY])
+
     async def run_bot_instances(self):
         all_bot_instances = data.get_all_bot_instances()
         if all_bot_instances:
             for instance in all_bot_instances:
-                running_bot_instances.append(instance[BOT_INSTANCE_KEY])
-                asyncio.create_task(self.start_bot_instance(instance[BOT_INSTANCE_KEY]))
+                running_bot_instances.append(instance[BOT_TOKEN_KEY])
+                asyncio.create_task(self.start_bot_instance(instance[BOT_TOKEN_KEY]))
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -170,13 +228,22 @@ class UpdateTask(commands.Cog):
             'activity': None
         }
 
+        # for instances
         if config.CONFIG.secret_token != self.bot.http.token:
-            data.set_bot_id(self.bot.user.id, self.bot.http.token)
+            bot_instance = data.get_bot_instance_token(self.bot.http.token)
 
+            if bot_instance[BOT_ACTIVITY_TEXT_KEY]:
+                await update_activity(bot_instance, bot_instance[BOT_ACTIVITY_TYPE_KEY], bot_instance[BOT_ACTIVITY_TEXT_KEY])
+
+            # set bot id
+            data.set_bot_id(self.bot.user.id, self.bot.http.token)
+            # set bot name
+            data.set_bot_name(bot_instance[GUILD_ID_KEY], self.bot.user.name)
+
+        # for the main bot
         if not running_bot_instances:
             global main_bot
             main_bot = self.bot
-            self.api_update.start()
             self.update.start()
             asyncio.create_task(self.run_bot_instances())
 
@@ -195,120 +262,6 @@ class UpdateTask(commands.Cog):
     async def force_update(self, ctx):
         self.update.restart()
         await ctx.send("Updating!")
-
-    @tasks.loop(seconds=5)
-    async def api_update(self):
-        await self.bot.wait_until_ready()
-        with self.api_update_lock:
-            instances = data.get_all_bot_instances()
-            if instances is None:
-                instances = []
-
-            for instance in instances:
-                if instance[BOT_INSTANCE_KEY] not in running_bot_instances:
-                    # start running new bot instances
-                    if instance[BOT_INSTANCE_KEY] not in running_bot_instances:
-                        running_bot_instances.append(instance[BOT_INSTANCE_KEY])
-                        asyncio.create_task(self.start_bot_instance(instance[BOT_INSTANCE_KEY]))
-                        continue
-
-            for running_instance in running_bot_instances:
-                instance = data.get_bot_instance_token(running_instance)
-                # stop deleted instances
-                if instance is None:
-                    running_bot_instances.remove(running_instance)
-                    to_be_removed = [b for b in running_bots if running_bots[b]['token'] == running_instance]
-                    if to_be_removed:
-                        await running_bots[to_be_removed[0]]['bot'].close()
-                        del running_bots[to_be_removed[0]]
-
-                    continue
-
-                bot_obj = [running_bots[b]['bot'] for b in running_bots if b == instance[BOT_ID_KEY]]
-                if not bot_obj:
-                    continue
-
-                bot_obj = bot_obj[0]
-
-                # avatar timout
-                avatar_timout = instance[AVATAR_TIMEOUT_KEY]
-                if avatar_timout and int(avatar_timout) <= time.time():
-                    data.set_avatar_timout(instance[GUILD_ID_KEY], 0)
-                    avatar_timout = 0
-
-                if not avatar_timout:
-                    # avatar change
-                    try:
-                        if instance[PREVIOUS_BOT_AVATAR_KEY] != instance[BOT_AVATAR_KEY]:
-                            url = instance[BOT_AVATAR_KEY]
-                            if url.startswith('file://'):
-                                avatar = open(url.replace("file://", ""), 'rb').read()
-                            else:
-                                async with aiohttp.ClientSession() as session:
-                                    async with session.get(url) as response:
-                                        avatar = await response.read()
-
-                            await bot_obj.user.edit(avatar=avatar)
-                    except discord.HTTPException:
-                        # user is editing avatar too many times, set 1h timeout
-                        timout = round(time.time() + 3600)
-                        data.set_avatar_timout(instance[GUILD_ID_KEY], timout)
-                    except:
-                        pass
-
-                if instance[BOT_AVATAR_KEY] != str(bot_obj.user.avatar_url):
-                    data.set_bot_avatar(instance[GUILD_ID_KEY], str(bot_obj.user.avatar_url))
-                    data.set_previous_avatar(instance[GUILD_ID_KEY], str(bot_obj.user.avatar_url))
-
-                # name timout
-                name_timout = instance[NAME_TIMEOUT_KEY]
-                if name_timout and int(name_timout) <= time.time():
-                    data.set_name_timeout(instance[GUILD_ID_KEY], 0)
-                    name_timout = 0
-
-                # name change
-                if not name_timout:
-                    try:
-                        if not instance[BOT_NAME_KEY]:
-                            data.set_bot_name(instance[GUILD_ID_KEY], bot_obj.user.name)
-                            data.set_previous_name(instance[GUILD_ID_KEY], bot_obj.user.name)
-
-                        if instance[PREVIOUS_BOT_NAME_KEY] != instance[BOT_NAME_KEY]:
-                            await bot_obj.user.edit(username=instance[BOT_NAME_KEY])
-                            data.set_previous_name(instance[GUILD_ID_KEY], instance[BOT_NAME_KEY])
-                    except discord.HTTPException:
-                        # user is editing name too many times, set 1h timeout
-                        timout = round(time.time() + 3600)
-                        data.set_name_timeout(instance[GUILD_ID_KEY], timout)
-
-                if instance[BOT_NAME_KEY] != str(bot_obj.user.name):
-                    data.set_bot_name(instance[GUILD_ID_KEY], str(bot_obj.user.name))
-                    data.set_previous_name(instance[GUILD_ID_KEY], str(bot_obj.user.name))
-
-                # activity change
-                activity_type = instance[BOT_ACTIVITY_TYPE_KEY]
-                activity_text = instance[BOT_ACTIVITY_TEXT_KEY]
-
-                if activity_type and activity_text:
-                    if activity_type == 'playing':
-                        activity_type = discord.ActivityType.playing
-                    elif activity_type == 'listening':
-                        activity_type = discord.ActivityType.listening
-                    elif activity_type == 'competing':
-                        activity_type = discord.ActivityType.competing
-                    elif activity_type == 'watching':
-                        activity_type = discord.ActivityType.watching
-                    else:
-                        continue
-
-                    current_activity = running_bots[instance[BOT_ID_KEY]]['activity']
-
-                    if (current_activity and current_activity.type == activity_type) and repr(current_activity.name) == repr(activity_text):
-                        continue
-
-                    new_activity = discord.Activity(type=activity_type, name=activity_text)
-                    running_bots[instance[BOT_ID_KEY]]['activity'] = new_activity
-                    await bot_obj.change_presence(status=discord.Status.online, activity=new_activity)
 
     @tasks.loop(seconds=UPDATE_WAIT_TIME)
     async def update(self):
@@ -355,7 +308,10 @@ class UpdateTask(commands.Cog):
                 + " members."
             )
 
-    @commands.command(help="updates your wallet balance / roles immediately")
+    @commands.command(
+        name='change_rally_id',
+        help="updates your wallet balance / roles immediately"
+    )
     @commands.guild_only()
     async def set_rally_id(self, ctx):
         member = ctx.author

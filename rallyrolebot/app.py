@@ -1,4 +1,5 @@
 import uvicorn
+import asyncio
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -50,6 +51,30 @@ async def root():
         "bot": "Welcome to rally discord bot api",
         "docs": "api documentation at /docs or /redoc",
     }
+
+
+def _run(self, sockets=None):
+    asyncio.create_task(self.serve(sockets=sockets))
+
+
+server = None
+
+
+async def run(loop):
+    global server
+    config.parse_args()
+
+    # replace uvicorn run function with our own so it can be run alongside the discord bot
+    uvicorn.Server.run = _run
+    # remove uvicorn signal handlers installer so those can be handled in main.py
+    uvicorn.Server.install_signal_handlers = lambda *a: None
+
+    uvicorn_config = uvicorn.Config(app=app, loop=loop, host=config.CONFIG.host, port=int(config.CONFIG.port))
+    uvicorn_server = uvicorn.Server(config=uvicorn_config)
+
+    # store uvicorn server for use in main.py
+    server = uvicorn_server
+    uvicorn_server.run()
 
 
 if __name__ == "__main__":

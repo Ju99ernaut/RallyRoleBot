@@ -344,7 +344,7 @@ def set_bot_instance(db, botId, bot_instance):
     table.upsert(
         {
             BOT_ID_KEY: botId,
-            BOT_INSTANCE_KEY: bot_instance,
+            BOT_TOKEN_KEY: bot_instance,
         },
         [BOT_ID_KEY],
     )
@@ -356,33 +356,9 @@ def set_bot_id(db, botId, bot_instance):
     table.update(
         {
             BOT_ID_KEY: botId,
-            BOT_INSTANCE_KEY: bot_instance,
+            BOT_TOKEN_KEY: bot_instance,
         },
-        [BOT_INSTANCE_KEY],
-    )
-
-
-@connect_db
-def set_previous_name(db, guildId, name):
-    table = db[BOT_INSTANCES_KEY]
-    table.upsert(
-        {
-            PREVIOUS_BOT_NAME_KEY: name,
-            GUILD_ID_KEY: guildId,
-        },
-        [GUILD_ID_KEY],
-    )
-
-
-@connect_db
-def set_previous_avatar(db, guildId, avatar):
-    table = db[BOT_INSTANCES_KEY]
-    table.upsert(
-        {
-            PREVIOUS_BOT_AVATAR_KEY: avatar,
-            GUILD_ID_KEY: guildId,
-        },
-        [GUILD_ID_KEY],
+        [BOT_TOKEN_KEY],
     )
 
 
@@ -392,10 +368,8 @@ def add_bot_instance(db, guildId, bot_instance):
     table.insert(
         {
             GUILD_ID_KEY: guildId,
-            BOT_INSTANCE_KEY: bot_instance,
-            PREVIOUS_BOT_AVATAR_KEY: "",
+            BOT_TOKEN_KEY: bot_instance,
             BOT_AVATAR_KEY: DEFAULT_BOT_AVATAR_URL,
-            PREVIOUS_BOT_NAME_KEY: "",
             BOT_NAME_KEY: "",
             BOT_ID_KEY: 0,
             AVATAR_TIMEOUT_KEY: 0,
@@ -407,14 +381,6 @@ def add_bot_instance(db, guildId, bot_instance):
 
 
 @connect_db
-def get_bot_id(db, guildId):
-    table = db[BOT_INSTANCES_KEY]
-    row = table.find_one(guildId=guildId)
-    if row is not None:
-        return row[BOT_ID_KEY]
-
-
-@connect_db
 def get_bot_instance(db, guildId):
     table = db[BOT_INSTANCES_KEY]
     return table.find_one(guildId=guildId)
@@ -423,7 +389,7 @@ def get_bot_instance(db, guildId):
 @connect_db
 def get_bot_instance_token(db, token):
     table = db[BOT_INSTANCES_KEY]
-    return table.find_one(botInstance=token)
+    return table.find_one(botToken=token)
 
 
 @connect_db
