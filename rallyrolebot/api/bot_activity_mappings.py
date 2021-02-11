@@ -19,7 +19,7 @@ router = APIRouter(
 
 
 @router.get("/{guildId}", response_model=BotActivityMapping)
-async def read_mapping(guildId):
+async def read_mapping(guildId: str):
     bot_instance = data.get_bot_instance(guildId)
     if not bot_instance:
         return {}
@@ -31,7 +31,7 @@ async def read_mapping(guildId):
 
 
 @router.post("", response_model=BotActivityMapping)
-async def add_mapping(mapping: BotActivityMapping, guildId):
+async def add_mapping(mapping: BotActivityMapping, guildId: str):
     bot_instance = data.get_bot_instance(guildId)
 
     if not bot_instance:

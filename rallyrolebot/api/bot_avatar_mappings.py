@@ -22,7 +22,7 @@ router = APIRouter(
 
 
 @router.get("/{guildId}", response_model=BotAvatarMapping)
-async def read_mapping(guildId):
+async def read_mapping(guildId: str):
     bot_instance = data.get_bot_instance(guildId)
     if not bot_instance:
         return {"bot_avatar": DEFAULT_BOT_AVATAR_URL, "guildId": guildId}
@@ -38,7 +38,7 @@ async def read_mapping(guildId):
 
 
 @router.post("", response_model=BotAvatarMapping)
-async def add_mapping(mapping: BotAvatarMapping, guildId):
+async def add_mapping(mapping: BotAvatarMapping, guildId: str):
     bot_instance = data.get_bot_instance(guildId)
     if not bot_instance:
         raise HTTPException(status_code=404, detail="Bot config not found")
