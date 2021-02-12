@@ -244,10 +244,10 @@ class UpdateTask(commands.Cog):
         if not running_bot_instances:
             global main_bot
             main_bot = self.bot
-            self.update.start()
             asyncio.create_task(self.run_bot_instances())
 
         print("We have logged in as {0.user}".format(self.bot))
+        self.update.start()
 
     @errors.standard_error_handler
     async def cog_command_error(self, ctx, error):
