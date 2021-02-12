@@ -31,3 +31,31 @@ class PrefixMapping(BaseModel):
 class Command(BaseModel):
     name: str
     description: str
+
+
+class BotNameMapping(BaseModel):
+    bot_name: str
+    name_timeout: Optional[int] = None
+
+
+class BotAvatarMapping(BaseModel):
+    bot_avatar: str
+    avatar_timeout: Optional[int] = None
+    guildId: Optional[str] = None
+
+
+class BotInstanceMapping(BaseModel):
+    bot_instance: str
+    activity_type: Optional[str] = None
+    activity_text: Optional[str] = None
+    bot_avatar: Optional[str] = None
+    avatar_timeout: Optional[int] = None
+    bot_name: Optional[str] = None
+    bot_id: Optional[int] = None
+    name_timeout: Optional[int] = None
+
+
+class BotActivityMapping(BaseModel):
+    success: Optional[str] = None
+    activity_type: Optional[str] = None
+    activity_text: Optional[str] = None

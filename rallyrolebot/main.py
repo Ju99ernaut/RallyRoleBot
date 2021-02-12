@@ -1,36 +1,93 @@
-import threading
-
-
 import discord
-from discord.ext import commands, tasks
-
+from discord.ext import commands
+import asyncio
 import config
 import data
-
 from cogs import *
+import functools
+import app
+import signal
 
-if __name__ == "__main__":
-    config.parse_args()
-    intents = discord.Intents.default()
-    intents.guilds = True
-    intents.members = True
-    default_prefix = config.CONFIG.command_prefix
 
-    def prefix(bot, ctx):
+config.parse_args()
+intents = discord.Intents.default()
+intents.guilds = True
+intents.members = True
+default_prefix = config.CONFIG.command_prefix
+
+
+def prefix(bot, ctx):
+    try:
+        guildId = ctx.guild.id
+        return data.get_prefix(guildId) or default_prefix
+    except:
+        return default_prefix
+
+
+class RallyRoleBot(commands.Bot):
+    def __init__(self):
+        super().__init__(command_prefix=prefix, case_insensitive=True, intents=intents)
+
+        self.add_cog(role_cog.RoleCommands(self))
+        self.add_cog(channel_cog.ChannelCommands(self))
+        self.add_cog(rally_cog.RallyCommands(self))
+        self.add_cog(defaults_cog.DefaultsCommands(self))
+        self.add_cog(update_cog.UpdateTask(self))
+
+        for command in self.commands:
+            data.add_command(command.name, command.help)
+
+    def run(self, *args, **kwargs):
+        loop = asyncio.get_event_loop()
+
+        async def _stop(*a):
+            # shutdown api
+            if app.server.should_exit:
+                app.server.force_exit = True
+            else:
+                app.server.should_exit = True
+
+            await asyncio.wait_for(app.server.shutdown(), timeout=1000)
+
+            # close loop and shutdown discord bot
+            loop.stop()
+
         try:
-            guildId = ctx.guild.id
-            return data.get_prefix(guildId) or default_prefix
-        except:
-            return default_prefix
+            func = functools.partial(asyncio.create_task, _stop())
+            loop.add_signal_handler(signal.SIGINT, func)
+            loop.add_signal_handler(signal.SIGTERM, func)
+        except NotImplementedError:
+            pass
 
-    bot = commands.Bot(command_prefix=prefix, intents=intents)
-    bot.add_cog(role_cog.RoleCommands(bot))
-    bot.add_cog(channel_cog.ChannelCommands(bot))
-    bot.add_cog(rally_cog.RallyCommands(bot))
-    bot.add_cog(defaults_cog.DefaultsCommands(bot))
-    bot.add_cog(update_cog.UpdateTask(bot))
+        async def runner():
+            asyncio.create_task(app.run(loop))
+            try:
+                await self.start(*args, **kwargs)
+            finally:
+                if not self.is_closed():
+                    await self.close()
 
-    for command in bot.commands:
-        data.add_command(command.name, command.help)
+        def stop_loop_on_completion(f):
+            loop.stop()
 
+        future = asyncio.ensure_future(runner(), loop=loop)
+        future.add_done_callback(stop_loop_on_completion)
+        try:
+            loop.run_forever()
+        except KeyboardInterrupt:
+            pass
+        finally:
+            future.remove_done_callback(stop_loop_on_completion)
+            discord.client._cleanup_loop(loop)
+
+        if not future.cancelled():
+            try:
+                return future.result()
+            except KeyboardInterrupt:
+                # I am unsure why this gets raised here but suppress it anyway
+                return None
+
+
+bot = RallyRoleBot()
+if __name__ == '__main__':
     bot.run(config.CONFIG.secret_token)
