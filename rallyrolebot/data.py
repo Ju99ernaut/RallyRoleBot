@@ -185,7 +185,6 @@ def add_prefix_mapping(db, guild_id, prefix):
 
 @connect_db
 def get_prefix(db, guild_id):
-
     table = db[CHANNEL_PREFIXES_TABLE]
     row = table.find_one(guildId=guild_id)
     if row is not None:
@@ -260,7 +259,7 @@ def add_user(db, discord_id, username, discriminator, guilds):
         {
             DISCORD_ID_KEY: discord_id,
             USERNAME_KEY: username,
-            DISCREMINATOR_KEY: discriminator,
+            DISCRIMINATOR_KEY: discriminator,
             GUILDS_KEY: guilds,
         },
         [DISCORD_ID_KEY],
@@ -369,3 +368,131 @@ def get_coin_prices(db, coin, limit):
 def get_last_24h_price(db, coin):
     table = db[COIN_PRICE_TABLE]
     return list(table.find(coinKind=coin, order_by="-id", _limit=24))[-1]
+
+
+@connect_db
+def set_bot_avatar(db, guildId, bot_avatar):
+    table = db[BOT_INSTANCES_KEY]
+    table.update(
+        {
+            GUILD_ID_KEY: guildId,
+            BOT_AVATAR_KEY: bot_avatar,
+        },
+        [GUILD_ID_KEY],
+    )
+
+
+@connect_db
+def set_bot_name(db, guildId, bot_name):
+    table = db[BOT_INSTANCES_KEY]
+    table.upsert(
+        {
+            GUILD_ID_KEY: guildId,
+            BOT_NAME_KEY: bot_name,
+        },
+        [GUILD_ID_KEY],
+    )
+
+
+@connect_db
+def set_bot_instance(db, botId, bot_instance):
+    table = db[BOT_INSTANCES_KEY]
+    table.upsert(
+        {
+            BOT_ID_KEY: botId,
+            BOT_TOKEN_KEY: bot_instance,
+        },
+        [BOT_ID_KEY],
+    )
+
+
+@connect_db
+def set_bot_id(db, botId, bot_instance):
+    table = db[BOT_INSTANCES_KEY]
+    table.update(
+        {
+            BOT_ID_KEY: botId,
+            BOT_TOKEN_KEY: bot_instance,
+        },
+        [BOT_TOKEN_KEY],
+    )
+
+
+@connect_db
+def add_bot_instance(db, guildId, bot_instance):
+    table = db[BOT_INSTANCES_KEY]
+    table.insert(
+        {
+            GUILD_ID_KEY: guildId,
+            BOT_TOKEN_KEY: bot_instance,
+            BOT_AVATAR_KEY: DEFAULT_BOT_AVATAR_URL,
+            BOT_NAME_KEY: "",
+            BOT_ID_KEY: 0,
+            AVATAR_TIMEOUT_KEY: 0,
+            NAME_TIMEOUT_KEY: 0,
+            BOT_ACTIVITY_TYPE_KEY: "",
+            BOT_ACTIVITY_TEXT_KEY: "",
+        }
+    )
+
+
+@connect_db
+def get_bot_instance(db, guildId):
+    table = db[BOT_INSTANCES_KEY]
+    return table.find_one(guildId=guildId)
+
+
+@connect_db
+def get_bot_instance_token(db, token):
+    table = db[BOT_INSTANCES_KEY]
+    return table.find_one(botToken=token)
+
+
+@connect_db
+def remove_bot_instance(db, guildId):
+    table = db[BOT_INSTANCES_KEY]
+    table.delete(guildId=guildId)
+
+
+@connect_db
+def get_all_bot_instances(db):
+    table = db[BOT_INSTANCES_KEY]
+    instances = table.all()
+    return [i for i in instances]
+
+
+@connect_db
+def set_avatar_timout(db, guildId, timout):
+    table = db[BOT_INSTANCES_KEY]
+    table.upsert(
+        {
+            AVATAR_TIMEOUT_KEY: timout,
+            GUILD_ID_KEY: guildId,
+        },
+        [GUILD_ID_KEY],
+    )
+
+
+@connect_db
+def set_name_timeout(db, guildId, timeout):
+    table = db[BOT_INSTANCES_KEY]
+    table.upsert(
+        {
+            NAME_TIMEOUT_KEY: timeout,
+            GUILD_ID_KEY: guildId,
+        },
+        [GUILD_ID_KEY],
+    )
+
+
+@connect_db
+def set_activity(db, guildId, activity_type, activity_text):
+    table = db[BOT_INSTANCES_KEY]
+    table.upsert(
+        {
+            BOT_ACTIVITY_TYPE_KEY: activity_type,
+            BOT_ACTIVITY_TEXT_KEY: activity_text,
+            GUILD_ID_KEY: guildId,
+        },
+        [GUILD_ID_KEY],
+    )

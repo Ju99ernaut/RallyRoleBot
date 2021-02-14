@@ -4,6 +4,9 @@ from typing import List
 from fastapi import APIRouter
 from .models import Command
 
+import config
+config.parse_args()
+
 router = APIRouter()
 
 

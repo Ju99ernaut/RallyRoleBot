@@ -5,6 +5,8 @@ from fastapi import APIRouter, Depends
 from .dependencies import owner_or_admin
 from .models import ChannelMapping
 
+import config
+config.parse_args()
 
 router = APIRouter(
     prefix="/mappings/channels",
