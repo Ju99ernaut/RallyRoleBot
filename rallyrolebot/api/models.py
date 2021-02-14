@@ -1,4 +1,5 @@
 from typing import Optional
+from datetime import datetime
 from pydantic import BaseModel
 
 
@@ -31,6 +32,19 @@ class PrefixMapping(BaseModel):
 class Command(BaseModel):
     name: str
     description: str
+
+
+class CoinPrice(BaseModel):
+    coinKind: str
+    priceInUSD: str
+    usd_24h_change: Optional[str] = None
+
+
+class CoinPrices(BaseModel):
+    id: Optional[int] = None
+    timeCreated: datetime
+    coinKind: str
+    priceInUSD: str
 
 
 class BotNameMapping(BaseModel):

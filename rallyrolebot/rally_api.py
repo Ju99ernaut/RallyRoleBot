@@ -57,6 +57,15 @@ def get_current_price(coin_name):
     return result.json()
 
 
+def get_creator_coins():
+    url = BASE_URL + "/creator_coins"
+    result = requests.get(url)
+    if result.status_code != 200:
+        returnReqError(url, result)
+        return False
+    return result.json()
+
+
 """
     TODO: Add 24h and 30d price data
 """
