@@ -27,7 +27,7 @@ class CreatorCoin(commands.Converter):
 class CurrencyType(commands.Converter):
     async def convert(self, ctx, argument):
         currencyType = argument.upper()
-        if currencyType != "USD" and currencyType != "COIN":
-            raise errors.BadArgument("<currencyType> must be USD or COIN")
+        if currencyType != "USD" and currencyType != "COINS":
+            raise errors.BadArgument("<currencyType> must be USD or COINS")
 
         return currencyType

@@ -90,27 +90,33 @@ class RallyCommands(commands.Cog):
     async def unset_rally_id(self, ctx, rally_id):
         data.remove_discord_rally_mapping(ctx.author.id, rally_id)
 
- 
     @commands.command(
         name="coinlink",
-        help="To generate a custom coin link, type $coinlink <CoinName> <COIN/USD> <Amount> <Memo>",
+        help="<coin name> <COINS/USD> <amount> <memo> Generate deeplink",
     )
     async def generate_coinlink_deeplink(
         self,
         ctx,
         coin: Union[CreatorCoin, CommonCoin],
         currencyType: CurrencyType,
-        amount: int,
-        memo: str,
+        amount,
+        *,
+        memo: str = None,
     ):
+        params = {"inputType": currencyType, "amount": amount}
+        if memo is not None:
+            params["note"] = memo
 
-        params = {"inputType": currencyType, "amount": amount, "note": memo}
         deeplink = (
             "https://www.rally.io/creator/" + coin["symbol"] + "/?" + urlencode(params)
         )
 
-        await pretty_print(deeplink)
-
+        await pretty_print(
+            ctx,
+            deeplink,
+            title=f"Click link to donate",
+            color=WARNING_COLOR,
+        )
 
     @commands.command(name="balance", help="View your balance")
     @commands.dm_only()
@@ -130,4 +136,3 @@ class RallyCommands(commands.Cog):
             title=f"{ctx.message.author.name}'s Balance",
             color=WARNING_COLOR,
         )
-
