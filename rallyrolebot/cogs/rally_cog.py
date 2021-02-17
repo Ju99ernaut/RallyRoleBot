@@ -128,7 +128,7 @@ class RallyCommands(commands.Cog):
         balanceStr = ""
 
         for balance in balances:
-            balanceStr += f"{balance['coinKind']}: {balance['coinBalance']} (Est. USD$ {balance['estimatedInUsd']})\n"
+            balanceStr += f"{balance['coinKind']}: {round(float(balance['coinBalance']), 2)} (Est. USD$ {round(float(balance['estimatedInUsd']), 2)})\n"
 
         await pretty_print(
             ctx,
